@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Manage orders, track statistics, and receive live notifications for Khandelwal & Sons.">
+  <title>Owner Portal | Khandelwal & Sons Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="owner-body">
+
+  <!-- Admin Authentication Overlay -->
+  <div id="admin-auth-overlay" class="modal-overlay" style="opacity: 1; visibility: visible; display: flex; background: var(--bg-primary);">
+    <div class="modal-content" style="max-width: 360px; text-align: center; border: 1px solid var(--border-glass); margin: auto;">
+      <div class="modal-body" style="padding: 40px 32px;">
+        <div class="logo-icon" style="width: 64px; height: 64px; font-size: 1.8rem; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--accent-gold), var(--accent-brown)); color: white; border-radius: 50%;">K</div>
+        <h3 class="modal-title" style="margin-bottom: 8px;">Admin Console</h3>
+        <p class="modal-subtitle" style="margin-bottom: 24px;">Enter the owner password to access the console.</p>
+        
+        <form id="admin-auth-form">
+          <div class="form-group" style="margin-bottom: 24px;">
+            <input type="password" class="form-control" id="admin-password" placeholder="Password (default: admin)" style="text-align: center;" required>
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%;">Unlock Console</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Header -->
+  <header class="navbar">
+    <div class="container navbar-container">
+      <a href="index.html" class="logo" id="owner-logo">
+        <div class="logo-icon">K</div>
+        Khandelwal<span>Admin</span>
+      </a>
+      
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Storefront</a>
+        <a href="owner.html" class="nav-link active">Orders Console</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="btn-admin-logout" class="btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; border-radius: var(--radius-full); margin-right: 8px;">
+          🚪 Log Out
+        </button>
+        <button id="sound-toggle" class="sound-toggle-btn" aria-label="Toggle Sound Alert">
+          🔊 Sound: ON
+        </button>
+        <button id="theme-toggle" class="btn-round" aria-label="Toggle Dark Mode">
+          🌙
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dashboard Content -->
+  <main class="container">
+    <div class="section-header" style="text-align: left; margin-bottom: 24px; max-width: 100%;">
+      <span class="section-subtitle">Real-time Operations</span>
+      <h1 class="section-title">Shop Dashboard</h1>
+      <p class="section-desc">Manage customer orders and monitor sales analytics live as checkout requests are placed.</p>
+    </div>
+
+    <!-- Analytics Dashboard Cards -->
+    <div class="stats-row">
+      <!-- Total Sales Card -->
+      <div class="stat-card" id="stat-revenue">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <span class="stat-label">Total Revenue</span>
+          <span class="stat-value" id="stats-revenue">₹0.00</span>
+        </div>
+      </div>
+      
+      <!-- Total Orders Card -->
+      <div class="stat-card" id="stat-orders">
+        <div class="stat-icon">📦</div>
+        <div class="stat-info">
+          <span class="stat-label">Total Orders</span>
+          <span class="stat-value" id="stats-orders-count">0</span>
+        </div>
+      </div>
+      
+      <!-- Items Sold Card -->
+      <div class="stat-card" id="stat-items">
+        <div class="stat-icon">🍽️</div>
+        <div class="stat-info">
+          <span class="stat-label">Items Sold</span>
+          <span class="stat-value" id="stats-items-count">0</span>
+        </div>
+      </div>
+      
+      <!-- Average Order Value Card -->
+      <div class="stat-card" id="stat-aov">
+        <div class="stat-icon">📈</div>
+        <div class="stat-info">
+          <span class="stat-label">Avg Order Value</span>
+          <span class="stat-value" id="stats-aov">₹0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Workspace Grid -->
+    <div class="owner-grid">
+      <!-- Orders List View -->
+      <section class="orders-section">
+        <div class="orders-header">
+          <h2 class="orders-title">Active Orders</h2>
+          <div class="orders-actions">
+            <!-- Filter Dropdown -->
+            <select id="order-filter-status" class="order-status-select" aria-label="Filter orders by status">
+              <option value="all">All Orders</option>
+              <option value="Pending">Pending</option>
+              <option value="Preparing">Preparing</option>
+              <option value="Out for Delivery">Out for Delivery</option>
+              <option value="Completed">Completed</option>
+            </select>
+            <!-- Clear Button -->
+            <button id="btn-clear-orders" class="btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; border-radius: var(--radius-sm);">
+              Clear Logs
+            </button>
+          </div>
+        </div>
+
+        <div class="orders-list" id="orders-list">
+          <!-- Rendered dynamically by owner.js -->
+        </div>
+      </section>
+
+      <!-- Sidebar Charts & Statistics -->
+      <aside class="owner-sidebar">
+        <!-- Sales Distribution Chart Card -->
+        <div class="panel-card" id="distribution-panel">
+          <h3 class="panel-title">Sales Ratio</h3>
+          <div class="chart-list">
+            <div class="chart-row">
+              <div class="chart-info">
+                <span>Chilled & Grocery</span>
+                <span id="chart-val-dairy">0%</span>
+              </div>
+              <div class="chart-bar-container">
+                <div class="chart-bar" id="chart-bar-dairy" style="width: 0%;"></div>
+              </div>
+            </div>
+            
+            <div class="chart-row">
+              <div class="chart-info">
+                <span>Frozen & Ready-to-Cook</span>
+                <span id="chart-val-sweets">0%</span>
+              </div>
+              <div class="chart-bar-container">
+                <div class="chart-bar" id="chart-bar-sweets" style="width: 0%; background: linear-gradient(90deg, #F5B041, var(--accent-gold));"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulator Helper Box -->
+        <div class="panel-card" style="background: var(--accent-cream); border-color: var(--accent-gold);">
+          <h3 class="panel-title" style="color: var(--accent-brown); border-bottom-color: var(--border-glass);">Simulator Guide</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px;">
+            To test real-time ordering:
+          </p>
+          <ol style="font-size: 0.85rem; color: var(--text-secondary); margin-left: 20px; line-height: 1.6;">
+            <li>Keep this Dashboard page open in one window.</li>
+            <li>Open the <a href="index.html" target="_blank" style="text-decoration: underline; font-weight: 600; color: var(--accent-brown);">Storefront</a> in another window.</li>
+            <li>Add items to your cart, fill the checkout form, and click <strong>"Send to Dashboard"</strong>.</li>
+            <li>You will hear a live notification sound here, and the order details will update instantly without page refreshes!</li>
+          </ol>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Success Notification Toast -->
+  <div class="toast" id="toast-notification">
+    <span class="toast-icon">✨</span>
+    <span class="toast-text">Success message placeholder</span>
+  </div>
+
+  <script src="owner.js"></script>
+</body>
+</html>

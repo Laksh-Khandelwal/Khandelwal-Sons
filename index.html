@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Indulge in organic dairy essentials and luxury sweets by Khandelwal & Sons. Pre-order now and notify the owner.">
+  <title>Khandelwal & Sons | Dairy, Frozen Foods & Groceries</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Premium Header / Navbar -->
+  <header class="navbar">
+    <div class="container navbar-container">
+      <a href="index.html" class="logo" id="store-logo">
+        <div class="logo-icon">K</div>
+        Khandelwal<span>&Sons</span>
+      </a>
+      
+      <nav class="nav-links">
+        <a href="#hero" class="nav-link active">Home</a>
+        <a href="#catalog" class="nav-link">Our Catalog</a>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- User Account Button / Dropdown -->
+        <div class="user-menu-container" id="user-menu-container">
+          <button id="nav-login-btn" class="btn-secondary" style="padding: 0 16px; height: 44px; font-size: 0.85rem; border-radius: var(--radius-full); display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+            👤 Sign In
+          </button>
+          <div id="nav-user-dropdown" class="user-dropdown-menu">
+            <button id="dropdown-profile-btn" class="dropdown-item">👤 My Account</button>
+            <button id="dropdown-logout-btn" class="dropdown-item" style="color: var(--accent-red);">🚪 Log Out</button>
+          </div>
+        </div>
+
+        <button id="theme-toggle" class="btn-round" aria-label="Toggle Dark Mode">
+          🌙
+        </button>
+        <button id="cart-toggle" class="btn-round" aria-label="Open Shopping Cart">
+          🛒
+          <span class="badge cart-count" id="cart-badge-count">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero" id="hero">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <span class="hero-tag">Organic & Pure</span>
+        <h1 class="hero-title">Khandelwal <span>&</span> Sons</h1>
+        <p class="hero-description">
+          Handcrafted daily with rich, farm-fresh milk and organic ingredients. Taste the authentic recipes passed down through generations, made with zero preservatives and infinite love.
+        </p>
+        <div class="hero-actions">
+          <a href="#catalog" class="btn-primary" id="btn-shop-now">Shop Catalog</a>
+        </div>
+      </div>
+      
+      <div class="hero-image-wrapper">
+        <div class="hero-image-bg"></div>
+        <img class="hero-img" src="https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=600&q=80" alt="Boutique Dairy and Sweets Platter" id="img-hero">
+      </div>
+    </div>
+  </section>
+
+  <!-- Category Section Banners -->
+  <section class="categories-banner">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subtitle">Crafted with Care</span>
+        <h2 class="section-title">Explore Categories</h2>
+        <p class="section-desc">From nutrient-rich morning milk essentials to sweet festive gift boxes, browse our organic ranges.</p>
+      </div>
+      
+      <div class="category-grid">
+        <!-- Dairy Category Card -->
+        <div class="category-card" onclick="document.querySelector('[data-category=\'dairy\']').click(); document.getElementById('catalog').scrollIntoView();" id="card-cat-dairy">
+          <img class="category-card-img" src="https://images.unsplash.com/photo-1528750955906-c98ba965e2ec?auto=format&fit=crop&w=600&q=80" alt="Fresh Farm Dairy Products">
+          <div class="category-card-overlay">
+            <span class="category-card-count">Farm Fresh</span>
+            <h3 class="category-card-title">Dairy & Cheese</h3>
+          </div>
+        </div>
+        
+        <!-- Sweets Category Card -->
+        <div class="category-card" onclick="document.querySelector('[data-category=\'frozen\']').click(); document.getElementById('catalog').scrollIntoView();" id="card-cat-frozen">
+          <img class="category-card-img" src="https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=600&q=80" alt="Frozen ready-to-cook foods">
+          <div class="category-card-overlay">
+            <span class="category-card-count">Ready to Cook</span>
+            <h3 class="category-card-title">Frozen Favourites</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Catalog Section -->
+  <section class="catalog-section" id="catalog">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subtitle">Our Fresh Collection</span>
+        <h2 class="section-title">The Boutique Catalogue</h2>
+      </div>
+
+      <!-- Filters & Search Controls -->
+      <div class="catalog-controls">
+        <div class="filter-tabs" id="catalog-filter-tabs">
+          <button class="filter-tab active" data-category="all" id="btn-filter-all">All Products</button>
+          <button class="filter-tab" data-category="dairy" id="btn-filter-dairy">Dairy & Cheese</button>
+          <button class="filter-tab" data-category="beverages">Milk & Beverages</button>
+          <button class="filter-tab" data-category="frozen">Frozen Foods</button>
+          <button class="filter-tab" data-category="snacks">Snacks & Chocolates</button>
+          <button class="filter-tab" data-category="sweets">Sweets</button>
+          <button class="filter-tab" data-category="bakery">Bakery</button>
+          <button class="filter-tab" data-category="ingredients">Ingredients</button>
+        </div>
+
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="search-input" placeholder="Search delicacies..." aria-label="Search catalog items">
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="products-grid" id="products-grid">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Shopping Cart Drawer (Off-Canvas) -->
+  <div class="cart-drawer" id="cart-drawer">
+    <div class="cart-header">
+      <h3>Shopping Cart (<span class="cart-count">0</span>)</h3>
+      <button class="btn-close" id="cart-close" aria-label="Close cart">&times;</button>
+    </div>
+    
+    <div class="cart-items" id="cart-items">
+      <!-- Populated dynamically by app.js -->
+    </div>
+    
+    <div class="cart-footer">
+      <div class="cart-summary-row">
+        <span>Subtotal</span>
+        <span id="cart-subtotal">₹0.00</span>
+      </div>
+      <div class="cart-summary-row total">
+        <span>Total</span>
+        <span id="cart-total">₹0.00</span>
+      </div>
+      <button class="btn-checkout" id="checkout-btn" disabled>Proceed to Order</button>
+    </div>
+  </div>
+
+  <!-- Checkout Dialog Modal -->
+  <div class="modal-overlay" id="checkout-modal">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <h3 class="modal-title">Place Your Order</h3>
+          <button class="btn-close" id="modal-close" aria-label="Close modal">&times;</button>
+        </div>
+        <p class="modal-subtitle">Provide your delivery details to complete your order setup.</p>
+        
+        <form id="checkout-form">
+          <div class="form-group">
+            <label class="form-label" for="cust-name">Customer Name</label>
+            <input type="text" class="form-control" id="cust-name" placeholder="Enter your full name" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="cust-phone">Contact Number</label>
+            <input type="tel" class="form-control" id="cust-phone" placeholder="e.g. +1 234 567 890" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="cust-address">Delivery Address</label>
+            <textarea class="form-control" id="cust-address" rows="3" placeholder="Flat number, building name, street" required></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="delivery-time">Preferred Delivery Time</label>
+            <select class="form-control" id="delivery-time" required>
+              <option value="Morning (7:00 AM - 10:00 AM)">Morning (7:00 AM - 10:00 AM)</option>
+              <option value="Afternoon (12:00 PM - 3:00 PM)">Afternoon (12:00 PM - 3:00 PM)</option>
+              <option value="Evening (5:00 PM - 8:00 PM)" selected>Evening (5:00 PM - 8:00 PM)</option>
+            </select>
+          </div>
+
+          <div class="checkout-options">
+            <button type="button" class="btn-checkout-opt whatsapp" id="btn-checkout-whatsapp">
+              💬 Send via WhatsApp
+            </button>
+            <button type="button" class="btn-checkout-opt owner-alert" id="btn-checkout-dashboard">
+              🔔 Send to Dashboard
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login / Register Modal -->
+  <div class="modal-overlay" id="size-modal">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <h3 class="modal-title">Choose a Size</h3>
+          <button class="btn-close" id="size-modal-close" aria-label="Close size selection">&times;</button>
+        </div>
+        <p class="modal-subtitle" id="size-product-title"></p>
+        <div class="form-group">
+          <label class="form-label" for="size-options">Available options</label>
+          <select class="form-control" id="size-options"></select>
+        </div>
+        <button type="button" class="btn-primary" id="size-confirm-btn" style="width: 100%;">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login / Register Modal -->
+  <div class="modal-overlay" id="login-modal">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+          <h3 class="modal-title" id="login-modal-title">Welcome</h3>
+          <button class="btn-close" id="login-modal-close" aria-label="Close modal">&times;</button>
+        </div>
+        
+        <!-- Toggle Tabs -->
+        <div class="modal-tabs">
+          <button class="modal-tab-btn active" id="tab-login">Sign In</button>
+          <button class="modal-tab-btn" id="tab-register">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="login-username">Username</label>
+            <input type="text" class="form-control" id="login-username" placeholder="Enter your username" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-password">Password</label>
+            <input type="password" class="form-control" id="login-password" placeholder="Enter your password" required>
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; margin-top: 12px;">Sign In</button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" style="display: none;">
+          <div class="form-group">
+            <label class="form-label" for="reg-username">Username</label>
+            <input type="text" class="form-control" id="reg-username" placeholder="Choose a username" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-password">Password</label>
+            <input type="password" class="form-control" id="reg-password" placeholder="Choose a password" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-name">Full Name</label>
+            <input type="text" class="form-control" id="reg-name" placeholder="Enter your full name" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-phone">Phone Number</label>
+            <input type="tel" class="form-control" id="reg-phone" placeholder="e.g. +1 234 567 890" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-address">Delivery Address</label>
+            <textarea class="form-control" id="reg-address" rows="2" placeholder="Your default delivery address" required></textarea>
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; margin-top: 12px;">Create Account</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile & History Modal -->
+  <div class="modal-overlay" id="profile-modal">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+          <h3 class="modal-title">My Account</h3>
+          <button class="btn-close" id="profile-modal-close" aria-label="Close modal">&times;</button>
+        </div>
+
+        <!-- Modal Tabs -->
+        <div class="modal-tabs">
+          <button class="modal-tab-btn active" id="tab-profile-settings">Default Profile</button>
+          <button class="modal-tab-btn" id="tab-profile-history">Order History</button>
+        </div>
+
+        <!-- Profile Settings Panel -->
+        <div id="panel-profile-settings">
+          <form id="profile-settings-form">
+            <div class="form-group">
+              <label class="form-label">Username</label>
+              <input type="text" class="form-control" id="profile-username" readonly style="opacity: 0.7; cursor: not-allowed; background: var(--accent-cream);">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="profile-name">Full Name</label>
+              <input type="text" class="form-control" id="profile-name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="profile-phone">Contact Number</label>
+              <input type="tel" class="form-control" id="profile-phone" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="profile-address">Default Delivery Address</label>
+              <textarea class="form-control" id="profile-address" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn-primary" style="width: 100%;">Save Changes</button>
+          </form>
+        </div>
+
+        <!-- Profile Order History Panel -->
+        <div id="panel-profile-history" style="display: none;">
+          <div id="profile-orders-list">
+            <!-- Order history rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast system notification banner -->
+  <div class="toast" id="toast-notification">
+    <span class="toast-icon">✨</span>
+    <span class="toast-text">Success message placeholder</span>
+  </div>
+
+  <!-- Footer Section -->
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <h3 class="logo footer-logo">Khandelwal<span>&Sons</span></h3>
+        <p class="footer-desc">Premium artisanal treats and pure local dairy, crafted under highest hygiene standards and delivered with warm care.</p>
+      </div>
+      <div>
+        <h4 class="footer-links-title">Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="#hero" class="footer-link">Home</a></li>
+          <li><a href="#catalog" class="footer-link">Catalog Collection</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-links-title">Store Hours</h4>
+        <ul class="footer-links" style="color: var(--text-secondary); font-size: 0.9rem;">
+          <li>Monday - Saturday: 6:00 AM - 9:00 PM</li>
+          <li>Sunday: 6:00 AM - 1:00 PM</li>
+          <li>Support: support@khandelwalandsons.com</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Khandelwal & Sons. All rights reserved.</p>
+      <p>Crafted for Premium Experiences</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
