@@ -5,7 +5,8 @@
 
 // Current inventory from Stock Summry-1.xlsx. Rates are displayed in Indian rupees.
 const STOCK_ITEMS = [
-  ['Amul Butter 100gm',160,52.02,'dairy'],['Amul Butter 500gm Cp',49.5,520.88,'dairy'],['Amul Butter Milk 200ml',660,12.91,'beverages'],['Amul Butter Sandwich Bread 200gm',120,16.92,'bakery'],['Amul Butter School',27,64.41,'dairy'],['Amul Cheese Block 1kg',58,22.37,'dairy'],['Amul Cheese Slice',8,389.52,'dairy'],['Amul Dahi 200gm',192,19.26,'dairy'],['Amul Dahi 800gm Pouch',420,42.63,'dairy'],['Amul Fresh Cream 1 Ltr',176,221.15,'dairy'],['Amul Fresh Cream 250ml',15,66.28,'dairy'],['Amul Fresh Paneer 15x200gm',15,76.38,'dairy'],['Amul Ghee 1Ltr',20,567.42,'dairy'],['Amul Gold Tetra Pack 1lr',60,77.84,'beverages'],['Amul Kool Cafe 30x200 Ml',30,29.99,'beverages'],['Amul Kool Kesar, Badam, Elachi, Rose',60,21.05,'beverages'],['Amul Lassi 32x250ml',64,21.25,'beverages'],['Amul Masti Dahi 1Kg',512,65.75,'dairy'],['Amul Probiotic Lassi Rose 24x180ml',24,14.71,'beverages'],['Amul Tadka Chaas 40x280 Ml Pouch',40,8.07,'beverages'],['Amul Unsalted Butter',4,260.67,'dairy'],['Buffalo Milk',591,68.01,'beverages'],['Buttermilk 440ml',2938,12.69,'beverages'],['Butter Milk Jeera 500ml',192,15.99,'beverages'],['CDM Roast Almond 36gm',5,40.10,'snacks'],['Chees Chiplet 12x40',24,523.42,'snacks'],['Choco Strands ST D 10 Kg',10,285.71,'ingredients'],['Crackle 36gm',5,40.10,'snacks'],['Crackle 75gm',5,87.57,'snacks'],['Dark Compound 400gm',22,129.88,'ingredients'],['Delicious Butter',15,140,'dairy'],['Derista - Analogue Processed Cheese Block 1kg',24,363.59,'dairy'],['Derista - Dairy Slices',14,68.25,'dairy'],['Derista - Filler Cheese 500gm',189,164.12,'dairy'],['Derista - Mozarella Cheese Diced 1 Kg',101,372.75,'dairy'],['Derista - Mozarella Pizza Topping Diced 1 Kg',270,355.64,'dairy'],['Derista - Mozzarella Cheese Blend 1 Kg',89,372.66,'dairy'],['Derista - Orange Chadder',11,474.04,'dairy'],['Derista - Processed Cheese Block Hard 1 KG',138,391.19,'dairy'],['Derista - Processed Soft Cheese Block 1 Kg',150,377.96,'dairy'],['Derista - Sandwich Slice (780g)',131,284.21,'dairy'],['Derista - UTH Brick Toned Milk 1ltr',90,57.78,'beverages'],['Dlecta Cheese Sauce 1kg Tub',6,415.98,'ingredients'],['Dlecta Mascarpone Cheese 400gm (24pcs)',12,287.51,'dairy'],['Ecotrop Whip Cream',14,52.38,'dairy'],['Flexi Cream 1kg',38,136.57,'dairy'],['Fr Salad Mayonnaise 1 KG (15)',44,69.52,'ingredients'],['Govind Dahi 150 Gm',24,14.98,'dairy'],['Govind UHT Cream 1 Ltr with Cap',12,192.31,'dairy'],['Gowardhan Cheese 1 KG',68,442.22,'dairy'],['Gowardhan Fresh Milk',444,49.95,'beverages'],['Gowardhan Ghee 1 Ltr',10,695.24,'dairy'],['Gowardhan Tea Special',36,53.50,'beverages'],['Hungritos - Premium French Fries 6mm 2.5 Kg',9,210.47,'frozen'],['Hungritos - Premium French Fries 9mm 2.5 Kg',5,220.15,'frozen'],['Hyfun French Fries Straight',20,223.81,'frozen'],['Maharaja Halwa',1,240,'sweets'],['Mathura Peda',1,400,'sweets'],['Mc Cains Sure Crisp Coated Fries 11mm 2.5KG',30,367.20,'frozen'],['Mc Cains v Crispers .2kg 6Pack',6,394.83,'frozen'],['Melody Classic - Chocolate - 48P',4,42.52,'snacks'],['Mirch Masala Banana Chips 150gm',4,48.84,'snacks'],['Nadiyadi Mix 170gm',3,36.29,'snacks'],['Nutralite Block 500gm - Butter',1456,46.80,'dairy'],['Parle-G Classic - Regular - 72 P',2,103.90,'snacks'],['Pineapple Halwa',1,240,'sweets'],['Premium Panchmeva 405gm',4,392.14,'sweets'],['Qualita Special Cheese 1 Kg',35,283.75,'dairy'],["Rich's Cooking Cream 1kg",10,192.53,'dairy'],['Aloo Paratha 120gm',44,45.46,'frozen'],['Falcon - Burger Patty 1.2 Kg 12P',18,135.70,'frozen'],['Falcon - French Fries 9mm Straight Cut 2.5 Kg',265,219.22,'frozen'],['Falcon - Lachha Paratha 1040 Gm 12+1 Pcs',98,119.13,'frozen'],['Goeld - French Fries 400gm',120,21.77,'frozen'],['Goeld - French Fries 9mm',78,179.35,'frozen'],['Hungritors - Chees Corn Nuggets 1 Kg (12kg)',12,349.60,'frozen'],['Hungritors - Herbed Potato Wedges 2.5 Kg',10,292.51,'frozen'],['Hungritos - Premium French Fries 6mm 2.5 Kg',30,223.75,'frozen'],['Hungritos - Premium French Fries 9mm 2.5 Kg',175,221.74,'frozen'],['Hy Fun - Burger Patty',16,167.65,'frozen'],['Hy Fun - French Fries Crinkle Cut 11mm 1 Kg =10',88,130.13,'frozen'],['Hy Fun - French Fries Shoestring 6MM',61,262.75,'frozen'],['Hy Fun - French Fries Straight Cut 9mm',42,262.75,'frozen'],['Hy Fun Mixed Veg Gyozas Momos',6,171.41,'frozen'],['Hy Fun - Pizza Regular 7" Margherita',24,42.27,'frozen'],['Hy fun - Pizza Regular 7" Tandoori Paneer',36,55.42,'frozen'],['Hy Fun - Super Crispy Coated French Fries 11mm 2.5 Kg',25,364.03,'frozen'],['Sweet Corn',35,75,'frozen']
+  ['Amul Butter 100gm',160,52.02,'dairy'],['Amul Butter 500gm Cp',49.5,520.88,'dairy'],['Amul Butter Milk 200ml',660,12.91,'beverages'],['Amul Butter Sandwich Bread 200gm',120,16.92,'bakery'],['Amul Butter School',27,64.41,'dairy'],['Amul Cheese Block 1kg',58,22.37,'dairy'],['Amul Cheese Slice',8,389.52,'dairy'],['Amul Dahi 200gm',192,19.26,'dairy'],['Amul Dahi 800gm Pouch',420,42.63,'dairy'],['Amul Fresh Cream 1 Ltr',176,221.15,'dairy'],['Amul Fresh Cream 250ml',15,66.28,'dairy'],['Amul Fresh Paneer 15x200gm',15,76.38,'dairy'],['Amul Ghee 1Ltr',20,567.42,'dairy'],['Amul Gold Tetra Pack 1lr',60,77.84,'beverages'],['Amul Kool Cafe 30x200 Ml',30,29.99,'beverages'],['Amul Kool Kesar, Badam, Elachi, Rose',60,21.05,'beverages'],['Amul Lassi 32x250ml',64,21.25,'beverages'],['Amul Masti Dahi 1Kg',512,65.75,'dairy'],['Amul Probiotic Lassi Rose 24x180ml',24,14.71,'beverages'],['Amul Tadka Chaas 40x280 Ml Pouch',40,8.07,'beverages'],['Amul Unsalted Butter',4,260.67,'dairy'],['Buffalo Milk',591,68.01,'beverages'],['Buttermilk 440ml',2938,12.69,'beverages'],['Butter Milk Jeera 500ml',192,15.99,'beverages'],['CDM Roast Almond 36gm',5,40.10,'snacks'],['Chees Chiplet 12x40',24,523.42,'snacks'],['Choco Strands ST D 10 Kg',10,285.71,'ingredients'],['Crackle 36gm',5,40.10,'snacks'],['Crackle 75gm',5,87.57,'snacks'],['Dark Compound 400gm',22,129.88,'ingredients'],['Delicious Butter',15,140,'dairy'],['Derista - Analogue Processed Cheese Block 1kg',24,363.59,'dairy'],['Derista - Dairy Slices',14,68.25,'dairy'],['Derista - Filler Cheese 500gm',189,164.12,'dairy'],['Derista - Mozarella Cheese Diced 1 Kg',101,372.75,'dairy'],['Derista - Mozarella Pizza Topping Diced 1 Kg',270,355.64,'dairy'],['Derista - Mozzarella Cheese Blend 1 Kg',89,372.66,'dairy'],['Derista - Orange Chadder',11,474.04,'dairy'],['Derista - Processed Cheese Block Hard 1 KG',138,391.19,'dairy'],['Derista - Processed Soft Cheese Block 1 Kg',150,377.96,'dairy'],['Derista - Sandwich Slice (780g)',131,284.21,'dairy'],['Derista - UTH Brick Toned Milk 1ltr',90,57.78,'beverages'],['Dlecta Cheese Sauce 1kg Tub',6,415.98,'ingredients'],['Dlecta Mascarpone Cheese 400gm (24pcs)',12,287.51,'dairy'],['Ecotrop Whip Cream',14,52.38,'dairy'],['Flexi Cream 1kg',38,136.57,'dairy'],['Fr Salad Mayonnaise 1 KG (15)',44,69.52,'ingredients'],['Govind Dahi 150 Gm',24,14.98,'dairy'],['Govind UHT Cream 1 Ltr with Cap',12,192.31,'dairy'],['Gowardhan Cheese 1 KG',68,442.22,'dairy'],['Gowardhan Fresh Milk',444,49.95,'beverages'],['Gowardhan Ghee 1 Ltr',10,695.24,'dairy'],['Gowardhan Tea Special',36,53.50,'beverages'],['Hungritos - Premium French Fries 6mm 2.5 Kg',9,210.47,'frozen'],['Hungritos - Premium French Fries 9mm 2.5 Kg',5,220.15,'frozen'],['Hyfun French Fries Straight',20,223.81,'frozen'],['Maharaja Halwa',1,240,'sweets'],['Mathura Peda',1,400,'sweets'],['Mc Cains Sure Crisp Coated Fries 11mm 2.5KG',30,367.20,'frozen'],['Mc Cains v Crispers .2kg 6Pack',6,394.83,'frozen'],['Melody Classic - Chocolate - 48P',4,42.52,'snacks'],['Mirch Masala Banana Chips 150gm',4,48.84,'snacks'],['Nadiyadi Mix 170gm',3,36.29,'snacks'],['Nutralite Block 500gm - Butter',1456,46.80,'dairy'],['Parle-G Classic - Regular - 72 P',2,103.90,'snacks'],['Pineapple Halwa',1,240,'sweets'],['Premium Panchmeva 405gm',4,392.14,'sweets'],['Qualita Special Cheese 1 Kg',35,283.75,'dairy'],["Rich's Cooking Cream 1kg",10,192.53,'dairy'],['Aloo Paratha 120gm',44,45.46,'frozen'],['Falcon - Burger Patty 1.2 Kg 12P',18,135.70,'frozen'],['Falcon - French Fries 9mm Straight Cut 2.5 Kg',265,219.22,'frozen'],['Falcon - Lachha Paratha 1040 Gm 12+1 Pcs',98,119.13,'frozen'],['Goeld - French Fries 400gm',120,21.77,'frozen'],['Goeld - French Fries 9mm',78,179.35,'frozen'],['Hungritors - Chees Corn Nuggets 1 Kg (12kg)',12,349.60,'frozen'],['Hungritors - Herbed Potato Wedges 2.5 Kg',10,292.51,'frozen'],['Hungritos - Premium French Fries 6mm 2.5 Kg',30,223.75,'frozen'],['Hungritos - Premium French Fries 9mm 2.5 Kg',175,221.74,'frozen'],['Hy Fun - Burger Patty',16,167.65,'frozen'],['Hy Fun - French Fries Crinkle Cut 11mm 1 Kg =10',88,130.13,'frozen'],['Hy Fun - French Fries Shoestring 6MM',61,262.75,'frozen'],['Hy Fun - French Fries Straight Cut 9mm',42,262.75,'frozen'],['Hy Fun Mixed Veg Gyozas Momos',6,171.41,'frozen'],['Hy Fun - Pizza Regular 7" Margherita',24,42.27,'frozen'],['Hy fun - Pizza Regular 7" Tandoori Paneer',36,55.42,'frozen'],['Hy Fun - Super Crispy Coated French Fries 11mm 2.5 Kg',25,364.03,'frozen'],['Sweet Corn',35,75,'frozen'],
+  ['Gulab Jamun 1kg',15,320,'sweets'],['Rasgulla 1kg',12,280,'sweets'],['Kaju Katli 500gm',10,450,'sweets'],['Motichoor Ladoo 500gm',14,260,'sweets'],['Besan Ladoo 500gm',12,240,'sweets'],['Rasmalai 1kg',8,360,'sweets'],['Jalebi 500gm',20,180,'sweets'],['Milk Barfi 500gm',10,300,'sweets'],['Soan Papdi 500gm',18,160,'sweets'],['Mysore Pak 500gm',9,320,'sweets'],['Kalakand 500gm',8,340,'sweets'],['Milk Cake 500gm',10,330,'sweets'],['Gajar Halwa 500gm',6,280,'sweets'],['Moong Dal Halwa 500gm',6,320,'sweets'],['Balushahi 500gm',10,220,'sweets'],['Imarti 500gm',8,200,'sweets'],['Agra Petha 500gm',12,180,'sweets'],['Ghevar 500gm',7,300,'sweets'],['Malpua 500gm',6,240,'sweets'],['Coconut Barfi 500gm',9,280,'sweets']
 ];
 
 const CATEGORY_DETAILS = {
@@ -84,6 +85,14 @@ const PRODUCT_IMAGE_RULES = [
 
 const getProductImage = (name, category) => {
   const label = name.toLowerCase();
+  // Sweets: only a few have real photos; the rest use the category image so
+  // generic keyword rules (e.g. "milk" in Milk Barfi) can't misfire.
+  if (category === 'sweets') {
+    if (/\bhalwa\b/.test(label)) return 'images/halwa.jpg';
+    if (/\bpeda\b/.test(label)) return 'images/mathura-peda.jpg';
+    if (/panchmeva/.test(label)) return 'images/panchmeva.jpg';
+    return CATEGORY_DETAILS.sweets.image;
+  }
   const rule = PRODUCT_IMAGE_RULES.find(([pattern]) => pattern.test(label));
   return rule ? `images/${rule[1]}` : CATEGORY_DETAILS[category].image;
 };
@@ -215,6 +224,8 @@ let lastOrderSnapshot = null;
 document.addEventListener('DOMContentLoaded', () => {
   initUsersDB();
   loadCartFromStorage();
+  renderCategoryCards();
+  renderBestSellers();
   renderCatalog();
   setupEventListeners();
   syncLoginUI();
@@ -270,6 +281,57 @@ function loadCartFromStorage() {
 // Save Cart
 function saveCartToStorage() {
   localStorage.setItem('dairy_delights_cart', JSON.stringify(cart));
+}
+
+// Category cards above the catalog: clicking one applies that filter
+function renderCategoryCards() {
+  const wrap = document.getElementById('category-cards');
+  if (!wrap) return;
+
+  wrap.innerHTML = Object.entries(CATEGORY_DETAILS).map(([key, cat]) => `
+    <button class="category-card-mini" data-category="${key}">
+      <img src="${cat.image}" alt="${cat.label}" loading="lazy">
+      <span>${cat.label}</span>
+    </button>
+  `).join('');
+
+  wrap.querySelectorAll('.category-card-mini').forEach(card => {
+    card.addEventListener('click', () => {
+      const tab = document.querySelector(`.filter-tab[data-category="${card.dataset.category}"]`);
+      if (tab) tab.click();
+      document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+}
+
+// Best sellers: the shop's fastest-moving items (highest stock turnover)
+function renderBestSellers() {
+  const row = document.getElementById('best-sellers-grid');
+  if (!row) return;
+
+  const totalStock = p => p.variants.reduce((s, v) => s + v.stock, 0);
+  const top = [...PRODUCTS].sort((a, b) => totalStock(b) - totalStock(a)).slice(0, 8);
+
+  row.innerHTML = top.map(product => `
+    <div class="product-card bestseller-card">
+      <div class="product-img-wrapper">
+        <img class="product-img" src="${product.image}" alt="${product.name}" loading="lazy">
+      </div>
+      <div class="product-info">
+        <h3 class="product-title">${product.name}</h3>
+        <div class="product-footer">
+          <div class="product-price-box">
+            <span class="product-price">${formatCurrency(product.price)}</span>
+          </div>
+          <button class="btn-add-cart" aria-label="Add to cart" data-id="${product.id}">➕</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  row.querySelectorAll('.btn-add-cart').forEach(btn => {
+    btn.addEventListener('click', () => openSizePicker(btn.getAttribute('data-id')));
+  });
 }
 
 // Render catalog items
