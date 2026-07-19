@@ -1500,6 +1500,27 @@ button {
   }
 }
 
+/* Floating WhatsApp button */
+.whatsapp-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+  z-index: 149;
+  transition: transform var(--transition-fast);
+}
+
+.whatsapp-fab:hover {
+  transform: scale(1.08);
+}
+
 /* Floating cart bar */
 .cart-bottom-bar {
   position: fixed;
@@ -1557,6 +1578,13 @@ button {
     width: calc(100% - 24px);
     justify-content: space-between;
     padding: 13px 18px;
+  }
+  /* Keep the WhatsApp button above the full-width cart bar */
+  .whatsapp-fab {
+    bottom: 84px;
+    right: 14px;
+    width: 48px;
+    height: 48px;
   }
   .navbar {
     height: 64px;
