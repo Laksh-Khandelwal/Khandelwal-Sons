@@ -224,6 +224,7 @@ let lastOrderSnapshot = null;
 document.addEventListener('DOMContentLoaded', () => {
   initUsersDB();
   loadCartFromStorage();
+  startHeroCarousel();
   renderCategoryCards();
   renderBestSellers();
   renderCatalog();
@@ -281,6 +282,18 @@ function loadCartFromStorage() {
 // Save Cart
 function saveCartToStorage() {
   localStorage.setItem('dairy_delights_cart', JSON.stringify(cart));
+}
+
+// Rotating photos of the shop in the hero section
+function startHeroCarousel() {
+  const slides = document.querySelectorAll('#hero-carousel img');
+  if (slides.length < 2) return;
+  let current = 0;
+  setInterval(() => {
+    slides[current].classList.remove('active');
+    current = (current + 1) % slides.length;
+    slides[current].classList.add('active');
+  }, 3500);
 }
 
 // Category cards above the catalog: clicking one applies that filter
