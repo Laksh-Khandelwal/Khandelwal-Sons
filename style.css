@@ -1604,17 +1604,19 @@ button {
   width: 54px;
   height: 54px;
   border-radius: 50%;
-  background: #25D366;
+  background: linear-gradient(135deg, var(--accent-brown), #5c3b24);
+  border: 2px solid var(--accent-gold);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-lg);
   z-index: 149;
-  transition: transform var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .whatsapp-fab:hover {
   transform: scale(1.08);
+  box-shadow: 0 0 0 4px var(--accent-cream), var(--shadow-lg);
 }
 
 /* Floating cart bar */
