@@ -499,18 +499,19 @@ function syncLoginUI() {
     if (phoneInput) phoneInput.value = session.phone;
     if (addressInput) addressInput.value = session.address;
   } else {
-    // Guest Mode
+    // Guest Mode: prefill checkout with the details from their last order on this device
     if (navLoginBtn) {
       navLoginBtn.innerHTML = `👤 Sign In`;
       navLoginBtn.style.background = 'var(--accent-cream)';
       navLoginBtn.style.color = 'var(--text-primary)';
     }
+    const saved = JSON.parse(localStorage.getItem('dd_last_customer') || 'null') || {};
     const nameInput = document.getElementById('cust-name');
     const phoneInput = document.getElementById('cust-phone');
     const addressInput = document.getElementById('cust-address');
-    if (nameInput) nameInput.value = '';
-    if (phoneInput) phoneInput.value = '';
-    if (addressInput) addressInput.value = '';
+    if (nameInput) nameInput.value = saved.name || '';
+    if (phoneInput) phoneInput.value = saved.phone || '';
+    if (addressInput) addressInput.value = saved.address || '';
   }
 
   renderReorderSection();
@@ -1186,6 +1187,9 @@ async function handleOrderSubmission(type) {
     total: subtotal,
     status: 'Pending'
   };
+
+  // Remember delivery details for next time (prefilled at next checkout)
+  localStorage.setItem('dd_last_customer', JSON.stringify({ name, phone, address }));
 
   const existingOrders = JSON.parse(localStorage.getItem('dairy_delights_orders') || '[]');
   existingOrders.unshift(orderData);
