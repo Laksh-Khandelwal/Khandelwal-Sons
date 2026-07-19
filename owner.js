@@ -1,22 +1,29 @@
 /**
  * Owner Dashboard script
- * Handles order updates, real-time sync, Web Audio chime synthesis, analytics, and admin authentication gates
+ * Fetches orders from the backend API (Supabase-backed), so the dashboard
+ * works from any computer. Handles status updates, polling with chime
+ * notifications, analytics, and server-side owner authentication.
  */
 
 // State Management
 let orders = [];
 let soundEnabled = true;
 let filterStatus = 'all';
+let knownOrderIds = null; // used to detect new orders between polls
+const POLL_INTERVAL_MS = 15000;
+
 const formatCurrency = value => new Intl.NumberFormat('en-IN', {
   style: 'currency', currency: 'INR', maximumFractionDigits: 2
 }).format(value);
+
+const ownerKey = () => sessionStorage.getItem('dd_owner_key') || '';
+const authHeaders = () => ({ 'x-owner-key': ownerKey(), 'Content-Type': 'application/json' });
 
 // DOM Elements
 const ordersList = document.getElementById('orders-list');
 const orderFilterStatus = document.getElementById('order-filter-status');
 const btnClearOrders = document.getElementById('btn-clear-orders');
 const soundToggle = document.getElementById('sound-toggle');
-const themeToggle = document.getElementById('theme-toggle');
 
 // Admin Auth DOM Elements
 const adminAuthOverlay = document.getElementById('admin-auth-overlay');
@@ -40,49 +47,25 @@ const toastNotification = document.getElementById('toast-notification');
 // Initialize Dashboard
 document.addEventListener('DOMContentLoaded', () => {
   checkAdminAuth();
-  loadOrders();
+  if (ownerKey()) loadOrders();
   setupEventListeners();
-  initTheme();
-  
+  setInterval(() => { if (ownerKey()) loadOrders({ silent: true }); }, POLL_INTERVAL_MS);
+
   // Synthesize a dummy sound context on user interaction
   document.body.addEventListener('click', initAudioContext, { once: true });
 });
 
-// Check Admin Session Status
+// Show/hide the login overlay depending on session state
 function checkAdminAuth() {
-  const isAdmin = localStorage.getItem('dairy_delights_admin_session');
-  if (isAdmin === 'true') {
-    if (adminAuthOverlay) {
-      adminAuthOverlay.style.opacity = '0';
-      adminAuthOverlay.style.visibility = 'hidden';
-    }
+  const unlocked = Boolean(ownerKey());
+  if (!adminAuthOverlay) return;
+  if (unlocked) {
+    adminAuthOverlay.style.opacity = '0';
+    adminAuthOverlay.style.visibility = 'hidden';
   } else {
-    if (adminAuthOverlay) {
-      adminAuthOverlay.style.opacity = '1';
-      adminAuthOverlay.style.visibility = 'visible';
-      adminAuthOverlay.style.display = 'flex';
-    }
-  }
-}
-
-// Theme Management
-function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-  updateThemeIcon(savedTheme);
-}
-
-function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-theme');
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', newTheme);
-  localStorage.setItem('theme', newTheme);
-  updateThemeIcon(newTheme);
-}
-
-function updateThemeIcon(theme) {
-  if (themeToggle) {
-    themeToggle.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+    adminAuthOverlay.style.opacity = '1';
+    adminAuthOverlay.style.visibility = 'visible';
+    adminAuthOverlay.style.display = 'flex';
   }
 }
 
@@ -97,7 +80,7 @@ function initAudioContext() {
 
 function playNotificationChime() {
   if (!soundEnabled) return;
-  
+
   try {
     if (!audioCtx) {
       initAudioContext();
@@ -105,11 +88,11 @@ function playNotificationChime() {
     if (audioCtx && audioCtx.state === 'suspended') {
       audioCtx.resume();
     }
-    
+
     if (!audioCtx) return;
 
     const t = audioCtx.currentTime;
-    
+
     // Tone 1 (Warm Root Chime)
     const osc1 = audioCtx.createOscillator();
     const gain1 = audioCtx.createGain();
@@ -120,7 +103,7 @@ function playNotificationChime() {
     gain1.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
     osc1.connect(gain1);
     gain1.connect(audioCtx.destination);
-    
+
     // Tone 2 (Sweet Overtone)
     const osc2 = audioCtx.createOscillator();
     const gain2 = audioCtx.createGain();
@@ -131,32 +114,57 @@ function playNotificationChime() {
     gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
     osc2.connect(gain2);
     gain2.connect(audioCtx.destination);
-    
+
     osc1.start(t);
     osc1.stop(t + 0.8);
-    
+
     osc2.start(t + 0.05);
     osc2.stop(t + 0.65);
-    
+
   } catch (e) {
     console.warn("Failed to play synthesized notification chime: ", e);
   }
 }
 
-// Load orders from LocalStorage
-function loadOrders() {
-  const savedOrders = localStorage.getItem('dairy_delights_orders');
-  if (savedOrders) {
-    try {
-      orders = JSON.parse(savedOrders);
-    } catch (e) {
-      orders = [];
+// Load orders from the backend API
+async function loadOrders({ silent = false } = {}) {
+  try {
+    const res = await fetch('/api/owner/orders', { headers: authHeaders() });
+    if (res.status === 401) {
+      sessionStorage.removeItem('dd_owner_key');
+      checkAdminAuth();
+      return;
     }
-  } else {
-    orders = [];
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Failed to load orders');
+
+    const fetched = (data.orders || []).map(row => ({
+      id: row.id,
+      timestamp: row.placed_at || row.created_at,
+      username: row.username,
+      customer: row.customer,
+      items: row.items,
+      total: Number(row.total),
+      status: row.status
+    }));
+
+    // Chime when new orders appear (skip the very first load)
+    if (knownOrderIds !== null) {
+      const fresh = fetched.filter(o => !knownOrderIds.has(o.id));
+      if (fresh.length > 0) {
+        playNotificationChime();
+        showToast(`New order received! ID: ${fresh[0].id}`);
+      }
+    }
+    knownOrderIds = new Set(fetched.map(o => o.id));
+
+    orders = fetched;
+    renderOrders();
+    calculateStats();
+  } catch (err) {
+    console.error('Failed to load orders:', err);
+    if (!silent) showToast('Could not load orders: ' + err.message);
   }
-  renderOrders();
-  calculateStats();
 }
 
 // Render list of orders
@@ -222,7 +230,7 @@ function renderOrders() {
         <div class="customer-detail-row"><span>Contact:</span>${order.customer.phone}</div>
         <div class="customer-detail-row"><span>Address:</span>${order.customer.address}</div>
         <div class="customer-detail-row"><span>Preferred:</span>${order.customer.deliveryTime}</div>
-        
+
         <table class="order-items-table">
           <thead>
             <tr>
@@ -263,40 +271,50 @@ function renderOrders() {
   });
 }
 
-// Update Order Status
-function updateOrderStatus(orderId, status) {
+// Update Order Status (persisted on the server)
+async function updateOrderStatus(orderId, status) {
   const index = orders.findIndex(o => o.id === orderId);
   if (index === -1) return;
 
+  const previous = orders[index].status;
   orders[index].status = status;
-  saveOrdersToStorage();
   calculateStats();
-  showToast(`Order ${orderId} updated to ${status}`);
-  
-  // Dispatch event manually to notify potential open customer storefront tabs in real-time
-  window.dispatchEvent(new StorageEvent('storage', {
-    key: 'dairy_delights_orders',
-    newValue: JSON.stringify(orders)
-  }));
+
+  try {
+    const res = await fetch(`/api/owner/orders/${encodeURIComponent(orderId)}`, {
+      method: 'PATCH',
+      headers: authHeaders(),
+      body: JSON.stringify({ status })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Update failed');
+    showToast(`Order ${orderId} updated to ${status}`);
+  } catch (err) {
+    orders[index].status = previous;
+    renderOrders();
+    calculateStats();
+    showToast('Could not update order: ' + err.message);
+  }
 }
 
-// Delete Order Log
-function deleteOrder(orderId) {
-  orders = orders.filter(o => o.id !== orderId);
-  saveOrdersToStorage();
-  renderOrders();
-  calculateStats();
-  showToast(`Order ${orderId} removed`);
-  
-  window.dispatchEvent(new StorageEvent('storage', {
-    key: 'dairy_delights_orders',
-    newValue: JSON.stringify(orders)
-  }));
-}
+// Delete Order Log (persisted on the server)
+async function deleteOrder(orderId) {
+  try {
+    const res = await fetch(`/api/owner/orders/${encodeURIComponent(orderId)}`, {
+      method: 'DELETE',
+      headers: authHeaders()
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Delete failed');
 
-// Save Orders
-function saveOrdersToStorage() {
-  localStorage.setItem('dairy_delights_orders', JSON.stringify(orders));
+    orders = orders.filter(o => o.id !== orderId);
+    knownOrderIds = new Set(orders.map(o => o.id));
+    renderOrders();
+    calculateStats();
+    showToast(`Order ${orderId} removed`);
+  } catch (err) {
+    showToast('Could not remove order: ' + err.message);
+  }
 }
 
 // Calculate Analytics Dashboard Stats
@@ -306,7 +324,7 @@ function calculateStats() {
     statsOrdersCount.textContent = '0';
     statsItemsCount.textContent = '0';
     statsAov.textContent = formatCurrency(0);
-    
+
     chartValDairy.textContent = '0%';
     chartValSweets.textContent = '0%';
     chartBarDairy.style.width = '0%';
@@ -316,7 +334,7 @@ function calculateStats() {
 
   const totalCount = orders.length;
   const revenue = orders.reduce((sum, o) => sum + o.total, 0);
-  
+
   let itemsSold = 0;
   let dairyItems = 0;
   let sweetsItems = 0;
@@ -346,7 +364,7 @@ function calculateStats() {
 
     chartValDairy.textContent = `${dairyPercentage}%`;
     chartValSweets.textContent = `${sweetsPercentage}%`;
-    
+
     chartBarDairy.style.width = `${dairyPercentage}%`;
     chartBarSweets.style.width = `${sweetsPercentage}%`;
   } else {
@@ -359,17 +377,29 @@ function calculateStats() {
 
 // Setup Event Listeners
 function setupEventListeners() {
-  // Handle Admin Password unlock
+  // Handle Admin Password unlock (verified server-side)
   if (adminAuthForm) {
-    adminAuthForm.addEventListener('submit', (e) => {
+    adminAuthForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const pwd = document.getElementById('admin-password').value;
-      if (pwd === 'admin') {
-        localStorage.setItem('dairy_delights_admin_session', 'true');
-        showToast('Admin access unlocked!');
-        checkAdminAuth();
-      } else {
-        showToast('Access Denied. Incorrect Password.');
+
+      try {
+        const res = await fetch('/api/owner/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pwd })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          sessionStorage.setItem('dd_owner_key', pwd);
+          showToast('Admin access unlocked!');
+          checkAdminAuth();
+          loadOrders();
+        } else {
+          showToast('Access Denied. Incorrect Password.');
+        }
+      } catch (err) {
+        showToast('Could not reach the server. Is the backend running?');
       }
     });
   }
@@ -377,7 +407,7 @@ function setupEventListeners() {
   // Handle Admin Logout
   if (btnAdminLogout) {
     btnAdminLogout.addEventListener('click', () => {
-      localStorage.removeItem('dairy_delights_admin_session');
+      sessionStorage.removeItem('dd_owner_key');
       showToast('Admin console locked.');
       checkAdminAuth();
     });
@@ -385,17 +415,19 @@ function setupEventListeners() {
 
   // Clear all orders
   if (btnClearOrders) {
-    btnClearOrders.addEventListener('click', () => {
-      if (confirm('Are you sure you want to clear all order logs? This will reset all analytics.')) {
+    btnClearOrders.addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to clear all order logs? This will reset all analytics.')) return;
+      try {
+        const res = await fetch('/api/owner/orders', { method: 'DELETE', headers: authHeaders() });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Clear failed');
         orders = [];
-        saveOrdersToStorage();
-        loadOrders();
+        knownOrderIds = new Set();
+        renderOrders();
+        calculateStats();
         showToast('All order logs cleared');
-        
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: 'dairy_delights_orders',
-          newValue: JSON.stringify(orders)
-        }));
+      } catch (err) {
+        showToast('Could not clear orders: ' + err.message);
       }
     });
   }
@@ -417,33 +449,6 @@ function setupEventListeners() {
       showToast(soundEnabled ? 'Order notification chimes enabled' : 'Sound notifications muted');
     });
   }
-
-  // Theme Toggle
-  if (themeToggle) {
-    themeToggle.addEventListener('click', toggleTheme);
-  }
-
-  // Listen to LocalStorage updates from storefront page
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'dairy_delights_orders') {
-      const oldLength = orders.length;
-      
-      try {
-        orders = JSON.parse(e.newValue || '[]');
-      } catch (err) {
-        orders = [];
-      }
-      
-      renderOrders();
-      calculateStats();
-
-      // Trigger alerts if a new order is added
-      if (orders.length > oldLength) {
-        playNotificationChime();
-        showToast(`New checkout order received! ID: ${orders[0].id}`);
-      }
-    }
-  });
 }
 
 // Toast Notification

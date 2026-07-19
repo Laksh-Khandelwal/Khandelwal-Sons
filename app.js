@@ -18,30 +18,74 @@ const CATEGORY_DETAILS = {
   ingredients: { label: 'Cooking Ingredients', image: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=700&q=80' }
 };
 
-const PRODUCT_IMAGES = {
-  milk: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=700&q=80',
-  butter: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=700&q=80',
-  cheese: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=700&q=80',
-  yogurt: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=700&q=80',
-  fries: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=700&q=80',
-  pizza: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=700&q=80',
-  bread: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=700&q=80',
-  chocolate: 'https://images.unsplash.com/photo-1599599810694-b5b37304c041?auto=format&fit=crop&w=700&q=80',
-  sweets: 'https://images.unsplash.com/photo-1589119908995-c6837fa14848?auto=format&fit=crop&w=700&q=80'
-};
+// Ordered rules mapping product names to local pack-shot images in images/.
+// First matching pattern wins, so brand-specific rules come before generic ones.
+const PRODUCT_IMAGE_RULES = [
+  [/amul butter milk/, 'amul-buttermilk.jpg'],
+  [/amul butter sandwich bread/, 'bread.jpg'],
+  [/amul unsalted butter/, 'amul-butter-unsalted.jpg'],
+  [/amul butter/, 'amul-butter.jpg'],
+  [/amul cheese block/, 'amul-cheese-block.jpg'],
+  [/amul cheese slice/, 'amul-cheese-slices.jpg'],
+  [/amul (masti )?dahi/, 'amul-dahi.jpg'],
+  [/amul fresh cream/, 'amul-cream.jpg'],
+  [/amul fresh paneer/, 'amul-paneer.jpg'],
+  [/amul ghee/, 'amul-ghee.jpg'],
+  [/amul gold/, 'amul-gold-milk.jpg'],
+  [/kool cafe/, 'amul-kool-cafe.jpg'],
+  [/amul kool/, 'amul-kool.jpg'],
+  [/\blassi\b/, 'amul-lassi.jpg'],
+  [/tadka chaas|buttermilk|butter milk/, 'amul-chaas.jpg'],
+  [/buffalo milk/, 'buffalo-milk.jpg'],
+  [/\bcdm\b|roast almond/, 'cdm-roast-almond.jpg'],
+  [/chiplet/, 'cheeselings.jpg'],
+  [/choco strands/, 'choco-strands.jpg'],
+  [/crackle/, 'amul-crackle.jpg'],
+  [/dark compound/, 'dark-compound.jpg'],
+  [/delicious butter/, 'butter-generic.jpg'],
+  [/diced|pizza topping/, 'mozzarella-diced.jpg'],
+  [/mozzarella|mozarella/, 'mozzarella-pizza.jpg'],
+  [/dairy slices|sandwich slice/, 'amul-cheese-slices.jpg'],
+  [/\buth\b/, 'toned-milk-carton.jpg'],
+  [/derista|qualita/, 'cheese-generic.jpg'],
+  [/cheese sauce/, 'cheese-sauce.jpg'],
+  [/mascarpone/, 'mascarpone.jpg'],
+  [/govind dahi/, 'curd-cup.jpg'],
+  [/ecotrop|whip cream|flexi cream|govind uht cream/, 'whipping-cream.jpg'],
+  [/mayonnaise/, 'mayonnaise.jpg'],
+  [/gowardhan cheese/, 'gowardhan-cheese.jpg'],
+  [/gowardhan ghee/, 'gowardhan-ghee.jpg'],
+  [/gowardhan fresh milk|gowardhan tea/, 'milk-pouch.jpg'],
+  [/nuggets/, 'corn-nuggets.jpg'],
+  [/wedges/, 'potato-wedges.jpg'],
+  [/hungrito.*fries/, 'hungritos-fries.jpg'],
+  [/mc ?cains?/, 'mccain-fries.jpg'],
+  [/pizza/, 'hyfun-pizza.jpg'],
+  [/momos|gyozas/, 'momos.jpg'],
+  [/burger patty/, 'burger-patty.jpg'],
+  [/hy ?fun.*fries/, 'hyfun-fries.jpg'],
+  [/fries/, 'fries-generic.jpg'],
+  [/aloo paratha/, 'aloo-paratha.jpg'],
+  [/paratha/, 'lachha-paratha.jpg'],
+  [/halwa/, 'halwa.jpg'],
+  [/\bpeda\b/, 'mathura-peda.jpg'],
+  [/melody/, 'melody.jpg'],
+  [/banana chips/, 'banana-chips.jpg'],
+  [/nadiyadi/, 'namkeen-mix.jpg'],
+  [/nutralite/, 'nutralite.jpg'],
+  [/parle.?g\b/, 'parle-g.jpg'],
+  [/panchmeva/, 'panchmeva.jpg'],
+  [/rich'?s/, 'richs-cream.jpg'],
+  [/sweet corn/, 'sweet-corn.jpg'],
+  [/cream/, 'whipping-cream.jpg'],
+  [/milk/, 'milk-pouch.jpg'],
+  [/chees/, 'cheese-generic.jpg']
+];
 
 const getProductImage = (name, category) => {
   const label = name.toLowerCase();
-  if (/butter|ghee/.test(label)) return PRODUCT_IMAGES.butter;
-  if (/cheese|paneer|mascarpone/.test(label)) return PRODUCT_IMAGES.cheese;
-  if (/dahi|yogurt|cream|lassi|chaas|buttermilk/.test(label)) return PRODUCT_IMAGES.yogurt;
-  if (/milk|kool/.test(label)) return PRODUCT_IMAGES.milk;
-  if (/fries|potato|nuggets/.test(label)) return PRODUCT_IMAGES.fries;
-  if (/pizza/.test(label)) return PRODUCT_IMAGES.pizza;
-  if (/bread/.test(label)) return PRODUCT_IMAGES.bread;
-  if (/choco|chocolate|crackle|melody/.test(label)) return PRODUCT_IMAGES.chocolate;
-  if (category === 'sweets') return PRODUCT_IMAGES.sweets;
-  return CATEGORY_DETAILS[category].image;
+  const rule = PRODUCT_IMAGE_RULES.find(([pattern]) => pattern.test(label));
+  return rule ? `images/${rule[1]}` : CATEGORY_DETAILS[category].image;
 };
 
 const getProductName = name => name
@@ -76,7 +120,15 @@ const PRODUCTS = Array.from(STOCK_ITEMS.reduce((catalog, [sourceName, stock, pri
     });
   }
   const product = catalog.get(key);
-  product.variants.push({ id: `variant-${index + 1}`, size: getProductSize(sourceName), price, stock });
+  const size = getProductSize(sourceName);
+  const existingVariant = product.variants.find(variant => variant.size === size);
+  if (existingVariant) {
+    // Same product listed twice (e.g. two purchase lots): merge stock, keep latest price
+    existingVariant.stock += stock;
+    existingVariant.price = price;
+  } else {
+    product.variants.push({ id: `variant-${index + 1}`, size, price, stock });
+  }
   return catalog;
 }, new Map()).values()).map(product => ({
   ...product,
@@ -108,7 +160,6 @@ const checkoutBtn = document.getElementById('checkout-btn');
 const checkoutModal = document.getElementById('checkout-modal');
 const modalClose = document.getElementById('modal-close');
 const checkoutForm = document.getElementById('checkout-form');
-const themeToggle = document.getElementById('theme-toggle');
 const toastNotification = document.getElementById('toast-notification');
 
 // User Login DOM Elements
@@ -144,13 +195,23 @@ const sizeOptions = document.getElementById('size-options');
 const sizeConfirmBtn = document.getElementById('size-confirm-btn');
 let pendingProduct = null;
 
+// Reorder ("Order Again") DOM Elements
+const reorderSection = document.getElementById('reorder-section');
+const reorderUserName = document.getElementById('reorder-user-name');
+const reorderFrequentGrid = document.getElementById('reorder-frequent-grid');
+const reorderLastGrid = document.getElementById('reorder-last-grid');
+const reorderLastMeta = document.getElementById('reorder-last-meta');
+const tabReorderFrequent = document.getElementById('tab-reorder-frequent');
+const tabReorderLast = document.getElementById('tab-reorder-last');
+const btnReorderLast = document.getElementById('btn-reorder-last');
+let lastOrderSnapshot = null;
+
 // Initialize Website
 document.addEventListener('DOMContentLoaded', () => {
   initUsersDB();
   loadCartFromStorage();
   renderCatalog();
   setupEventListeners();
-  initTheme();
   syncLoginUI();
 });
 
@@ -167,27 +228,6 @@ function initUsersDB() {
       }
     ];
     localStorage.setItem('dairy_delights_users', JSON.stringify(defaultUsers));
-  }
-}
-
-// Theme Management
-function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-  updateThemeIcon(savedTheme);
-}
-
-function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-theme');
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', newTheme);
-  localStorage.setItem('theme', newTheme);
-  updateThemeIcon(newTheme);
-}
-
-function updateThemeIcon(theme) {
-  if (themeToggle) {
-    themeToggle.innerHTML = theme === 'dark' ? '☀️' : '🌙';
   }
 }
 
@@ -233,8 +273,8 @@ function renderCatalog() {
   
   const filteredProducts = PRODUCTS.filter(product => {
     const matchesCategory = currentCategory === 'all' || product.category === currentCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          product.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          product.category.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -292,15 +332,17 @@ function openSizePicker(productId) {
 }
 
 // Shopping Cart Actions
-function addToCart(productId, variantId) {
+function addToCart(productId, variantId, quantity = 1, options = {}) {
+  const { silent = false, openDrawer = true } = options;
   const product = PRODUCTS.find(p => p.id === productId);
   const variant = product?.variants.find(item => item.id === variantId);
-  if (!product || !variant) return;
+  if (!product || !variant) return false;
 
+  const qty = Math.max(1, parseInt(quantity, 10) || 1);
   const existingItemIndex = cart.findIndex(item => item.id === variantId);
 
   if (existingItemIndex > -1) {
-    cart[existingItemIndex].quantity += 1;
+    cart[existingItemIndex].quantity += qty;
   } else {
     cart.push({
       id: variant.id,
@@ -309,17 +351,37 @@ function addToCart(productId, variantId) {
       image: product.image,
       price: variant.price,
       unit: variant.size,
-      quantity: 1
+      quantity: qty
     });
   }
 
   saveCartToStorage();
   updateCartUI();
-  showToast(`Added ${product.name} to cart!`);
-  
-  if (cartDrawer && !cartDrawer.classList.contains('open')) {
+
+  if (!silent) showToast(`Added ${product.name} to cart!`);
+
+  if (openDrawer && cartDrawer && !cartDrawer.classList.contains('open')) {
     cartDrawer.classList.add('open');
   }
+
+  return true;
+}
+
+// Resolve a stored order line item back to a live catalog product + variant
+function resolveOrderItem(item) {
+  const legacyIndex = String(item.id || '').replace('stock-', '');
+  const matchesId = candidate => candidate.id === item.id || candidate.id === `variant-${legacyIndex}`;
+
+  let product = PRODUCTS.find(p => p.variants.some(matchesId));
+  let variant = product?.variants.find(matchesId);
+
+  // Fallback: the catalog may have been re-indexed, so match on name + size
+  if (!product) {
+    product = PRODUCTS.find(p => p.name.toLowerCase() === String(item.name || '').toLowerCase());
+    variant = product?.variants.find(v => v.size === item.unit) || product?.variants[0];
+  }
+
+  return product && variant ? { product, variant } : null;
 }
 
 function updateQuantity(productId, amount) {
@@ -436,15 +498,201 @@ function syncLoginUI() {
     if (phoneInput) phoneInput.value = '';
     if (addressInput) addressInput.value = '';
   }
+
+  renderReorderSection();
+}
+
+// ---------- "Order Again" personalised section ----------
+
+// Render the frequently-ordered / last-order shortcuts above the catalog.
+// Only shown for a signed-in customer who has at least one past order.
+function renderReorderSection() {
+  if (!reorderSection) return;
+
+  const session = JSON.parse(localStorage.getItem('dairy_delights_session') || 'null');
+
+  if (!session) {
+    reorderSection.style.display = 'none';
+    lastOrderSnapshot = null;
+    return;
+  }
+
+  const allOrders = JSON.parse(localStorage.getItem('dairy_delights_orders') || '[]');
+  const userOrders = allOrders.filter(order => order.username === session.username);
+
+  if (userOrders.length === 0) {
+    reorderSection.style.display = 'none';
+    lastOrderSnapshot = null;
+    return;
+  }
+
+  // Orders are stored newest-first (unshift), so index 0 is the latest order
+  lastOrderSnapshot = userOrders[0];
+
+  if (reorderUserName) {
+    reorderUserName.textContent = `, ${session.name.split(' ')[0]}`;
+  }
+
+  renderFrequentItems(userOrders);
+  renderLastOrderItems(lastOrderSnapshot);
+
+  reorderSection.style.display = 'block';
+}
+
+// Aggregate quantities per item across every past order and show the top picks
+function renderFrequentItems(userOrders) {
+  if (!reorderFrequentGrid) return;
+
+  const tally = new Map();
+
+  userOrders.forEach(order => {
+    (order.items || []).forEach(item => {
+      const resolved = resolveOrderItem(item);
+      if (!resolved) return;
+
+      const key = resolved.variant.id;
+      const entry = tally.get(key) || {
+        product: resolved.product,
+        variant: resolved.variant,
+        totalQty: 0,
+        orderCount: 0
+      };
+      entry.totalQty += item.quantity || 1;
+      entry.orderCount += 1;
+      tally.set(key, entry);
+    });
+  });
+
+  const frequent = Array.from(tally.values())
+    .sort((a, b) => b.totalQty - a.totalQty || b.orderCount - a.orderCount)
+    .slice(0, 8);
+
+  reorderFrequentGrid.innerHTML = '';
+
+  if (frequent.length === 0) {
+    reorderFrequentGrid.innerHTML = `
+      <div class="reorder-empty">
+        <p>None of your previously ordered items are currently in the catalog.</p>
+      </div>
+    `;
+    return;
+  }
+
+  frequent.forEach(entry => {
+    reorderFrequentGrid.appendChild(buildReorderCard({
+      product: entry.product,
+      variant: entry.variant,
+      badge: `${entry.orderCount}× ordered`
+    }));
+  });
+
+  attachReorderCardHandlers(reorderFrequentGrid);
+}
+
+// Show the exact line items from the customer's most recent order
+function renderLastOrderItems(order) {
+  if (!reorderLastGrid) return;
+
+  reorderLastGrid.innerHTML = '';
+
+  const resolvedItems = (order.items || [])
+    .map(item => ({ item, resolved: resolveOrderItem(item) }))
+    .filter(entry => entry.resolved);
+
+  if (resolvedItems.length === 0) {
+    reorderLastGrid.innerHTML = `
+      <div class="reorder-empty">
+        <p>The items from your last order are no longer available.</p>
+      </div>
+    `;
+  } else {
+    resolvedItems.forEach(({ item, resolved }) => {
+      reorderLastGrid.appendChild(buildReorderCard({
+        product: resolved.product,
+        variant: resolved.variant,
+        badge: `Qty ${item.quantity}`,
+        quantity: item.quantity
+      }));
+    });
+    attachReorderCardHandlers(reorderLastGrid);
+  }
+
+  if (reorderLastMeta) {
+    reorderLastMeta.textContent = `Order ${order.id} · placed ${order.timestamp} · ${formatCurrency(order.total)}`;
+  }
+
+  if (btnReorderLast) {
+    btnReorderLast.disabled = resolvedItems.length === 0;
+  }
+}
+
+function buildReorderCard({ product, variant, badge, quantity = 1 }) {
+  const card = document.createElement('div');
+  card.className = 'reorder-card';
+  card.innerHTML = `
+    <img class="reorder-card-img" src="${product.image}" alt="${product.name}" loading="lazy">
+    <div class="reorder-card-body">
+      <h4 class="reorder-card-title" title="${product.name}">${product.name}</h4>
+      <span class="reorder-card-meta">${variant.size}<span class="reorder-badge">${badge}</span></span>
+      <span class="reorder-card-price">${formatCurrency(variant.price)}</span>
+    </div>
+    <button class="btn-add-cart btn-reorder-add" aria-label="Add ${product.name} to cart"
+            data-product-id="${product.id}" data-variant-id="${variant.id}" data-qty="${quantity}">
+      ➕
+    </button>
+  `;
+  return card;
+}
+
+function attachReorderCardHandlers(grid) {
+  grid.querySelectorAll('.btn-reorder-add').forEach(btn => {
+    btn.addEventListener('click', () => {
+      addToCart(
+        btn.getAttribute('data-product-id'),
+        btn.getAttribute('data-variant-id'),
+        btn.getAttribute('data-qty')
+      );
+    });
+  });
+}
+
+// Add every item from the last order back into the cart in one click
+function reorderLastOrder() {
+  if (!lastOrderSnapshot) return;
+
+  let added = 0;
+  let skipped = 0;
+
+  (lastOrderSnapshot.items || []).forEach(item => {
+    const resolved = resolveOrderItem(item);
+    if (!resolved) {
+      skipped += 1;
+      return;
+    }
+    const success = addToCart(
+      resolved.product.id,
+      resolved.variant.id,
+      item.quantity,
+      { silent: true, openDrawer: false }
+    );
+    if (success) added += 1;
+    else skipped += 1;
+  });
+
+  if (added === 0) {
+    showToast('None of those items are available right now.');
+    return;
+  }
+
+  showToast(skipped > 0
+    ? `Added ${added} item(s) to cart. ${skipped} no longer available.`
+    : `Added all ${added} item(s) from your last order!`);
+
+  if (cartDrawer) cartDrawer.classList.add('open');
 }
 
 // Event Listeners setup
 function setupEventListeners() {
-  // Theme Toggle
-  if (themeToggle) {
-    themeToggle.addEventListener('click', toggleTheme);
-  }
-
   // Cart open/close
   if (cartToggle && cartDrawer) {
     cartToggle.addEventListener('click', () => cartDrawer.classList.add('open'));
@@ -677,15 +925,9 @@ function setupEventListeners() {
     });
   }
 
-  // Form Submit (Checkout Options)
+  // Form Submit (Checkout)
   if (checkoutForm) {
-    const btnWhatsapp = checkoutForm.querySelector('.btn-checkout-opt.whatsapp');
     const btnOwnerAlert = checkoutForm.querySelector('.btn-checkout-opt.owner-alert');
-
-    btnWhatsapp.addEventListener('click', (e) => {
-      e.preventDefault();
-      handleOrderSubmission('whatsapp');
-    });
 
     btnOwnerAlert.addEventListener('click', (e) => {
       e.preventDefault();
@@ -693,9 +935,34 @@ function setupEventListeners() {
     });
   }
 
+  // "Order Again" section tabs
+  if (tabReorderFrequent && tabReorderLast) {
+    tabReorderFrequent.addEventListener('click', () => {
+      tabReorderFrequent.classList.add('active');
+      tabReorderLast.classList.remove('active');
+      reorderFrequentGrid.style.display = 'grid';
+      reorderLastGrid.style.display = 'none';
+      reorderLastMeta.style.display = 'none';
+    });
+
+    tabReorderLast.addEventListener('click', () => {
+      tabReorderLast.classList.add('active');
+      tabReorderFrequent.classList.remove('active');
+      reorderFrequentGrid.style.display = 'none';
+      reorderLastGrid.style.display = 'grid';
+      reorderLastMeta.style.display = 'block';
+    });
+  }
+
+  // One-click repeat of the entire last order
+  if (btnReorderLast) {
+    btnReorderLast.addEventListener('click', reorderLastOrder);
+  }
+
   // Listen to Storage events to update status badges under history page in real-time
   window.addEventListener('storage', (e) => {
     if (e.key === 'dairy_delights_orders') {
+      renderReorderSection();
       if (profileModal && profileModal.classList.contains('open') && panelProfileHistory.style.display === 'block') {
         renderUserOrderHistory();
       }
@@ -727,6 +994,36 @@ function renderUserOrderHistory() {
   const allOrders = JSON.parse(localStorage.getItem('dairy_delights_orders') || '[]');
   // Filter matching username
   const userOrders = allOrders.filter(o => o.username === session.username);
+
+  // Refresh statuses from the server (owner may have updated them from the
+  // dashboard on another device). Renders immediately, patches when fetched.
+  if (userOrders.length > 0) {
+    const ids = userOrders.slice(0, 50).map(o => o.id).join(',');
+    fetch(`/api/orders/status?ids=${encodeURIComponent(ids)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok || !data.statuses) return;
+        let changed = false;
+        allOrders.forEach(order => {
+          const fresh = data.statuses[order.id];
+          if (fresh && fresh !== order.status) {
+            order.status = fresh;
+            changed = true;
+          }
+        });
+        if (changed) {
+          localStorage.setItem('dairy_delights_orders', JSON.stringify(allOrders));
+          renderOrderHistoryCards(userOrders);
+        }
+      })
+      .catch(() => {}); // offline/local mode: keep stored statuses
+  }
+
+  renderOrderHistoryCards(userOrders);
+}
+
+function renderOrderHistoryCards(userOrders) {
+  if (!profileOrdersList) return;
 
   profileOrdersList.innerHTML = '';
 
@@ -772,16 +1069,31 @@ function renderUserOrderHistory() {
 }
 
 // Form Validation and Order Submission
-function handleOrderSubmission(type) {
+let orderSubmitting = false;
+async function handleOrderSubmission(type) {
+  if (orderSubmitting) return;
   if (!checkoutForm.checkValidity()) {
     checkoutForm.reportValidity();
     return;
   }
 
-  const name = document.getElementById('cust-name').value;
-  const phone = document.getElementById('cust-phone').value;
-  const address = document.getElementById('cust-address').value;
+  const name = document.getElementById('cust-name').value.trim();
+  const phone = document.getElementById('cust-phone').value.trim();
+  const address = document.getElementById('cust-address').value.trim();
   const deliveryTime = document.getElementById('delivery-time').value;
+
+  // Indian mobile number sanity check: 10 digits (optional +91 / 0 prefix)
+  const phoneDigits = phone.replace(/\D/g, '').replace(/^(91|0)(?=\d{10}$)/, '');
+  if (!/^[6-9]\d{9}$/.test(phoneDigits)) {
+    showToast('Please enter a valid 10-digit mobile number.');
+    document.getElementById('cust-phone').focus();
+    return;
+  }
+  if (address.length < 10) {
+    showToast('Please enter a complete delivery address.');
+    document.getElementById('cust-address').focus();
+    return;
+  }
 
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const orderId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
@@ -808,53 +1120,44 @@ function handleOrderSubmission(type) {
     status: 'Pending'
   };
 
-  if (type === 'dashboard') {
-    const existingOrders = JSON.parse(localStorage.getItem('dairy_delights_orders') || '[]');
-    existingOrders.unshift(orderData);
-    localStorage.setItem('dairy_delights_orders', JSON.stringify(existingOrders));
+  const existingOrders = JSON.parse(localStorage.getItem('dairy_delights_orders') || '[]');
+  existingOrders.unshift(orderData);
+  localStorage.setItem('dairy_delights_orders', JSON.stringify(existingOrders));
 
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'dairy_delights_orders',
-      newValue: JSON.stringify(existingOrders)
-    }));
+  window.dispatchEvent(new StorageEvent('storage', {
+    key: 'dairy_delights_orders',
+    newValue: JSON.stringify(existingOrders)
+  }));
 
-    showToast('Order successfully sent to owner!');
-    clearCart();
-    checkoutModal.classList.remove('open');
-  } else if (type === 'whatsapp') {
-    const shopOwnerPhone = '1234567890';
-    
-    let orderText = `*New Order: ${orderId}*\n`;
-    orderText += `*Customer:* ${name} (${username})\n`;
-    orderText += `*Phone:* ${phone}\n`;
-    orderText += `*Address:* ${address}\n`;
-    orderText += `*Delivery Time:* ${deliveryTime}\n\n`;
-    orderText += `*Items Ordered:*\n`;
-    
-    cart.forEach(item => {
-      orderText += `- ${item.name} (${item.quantity}x) - ${formatCurrency(item.price * item.quantity)}\n`;
+  // Send the order to the shop's backend (database + WhatsApp alert).
+  const submitBtn = checkoutForm.querySelector('.btn-checkout-opt');
+  orderSubmitting = true;
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Placing order…'; }
+
+  let delivered = false;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData),
+      signal: controller.signal
     });
-    
-    orderText += `\n*Total Amount:* ${formatCurrency(subtotal)}`;
-
-    const encodedText = encodeURIComponent(orderText);
-    const whatsappUrl = `https://wa.me/${shopOwnerPhone}?text=${encodedText}`;
-
-    // Auto-record in local storage dashboard logs for backup consistency
-    const existingOrders = JSON.parse(localStorage.getItem('dairy_delights_orders') || '[]');
-    existingOrders.unshift(orderData);
-    localStorage.setItem('dairy_delights_orders', JSON.stringify(existingOrders));
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'dairy_delights_orders',
-      newValue: JSON.stringify(existingOrders)
-    }));
-
-    window.open(whatsappUrl, '_blank');
-    
-    showToast('Opening WhatsApp to send order...');
-    clearCart();
-    checkoutModal.classList.remove('open');
+    clearTimeout(timer);
+    delivered = res.ok;
+  } catch (err) {
+    console.warn('Order submission failed:', err);
   }
+
+  orderSubmitting = false;
+  if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '🔔 Place Order'; }
+
+  showToast(delivered
+    ? 'Order placed! We will call you shortly to confirm (Cash on Delivery).'
+    : 'Order saved, but we could not reach the shop right now — please also call/WhatsApp us at +91 93217 82424 to confirm.');
+  clearCart();
+  checkoutModal.classList.remove('open');
 }
 
 // Helper: Clear Cart

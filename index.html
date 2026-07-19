@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Indulge in organic dairy essentials and luxury sweets by Khandelwal & Sons. Pre-order now and notify the owner.">
   <title>Khandelwal & Sons | Dairy, Frozen Foods & Groceries</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧀</text></svg>">
+  <meta property="og:title" content="Khandelwal & Sons | Dairy, Frozen Foods & Groceries">
+  <meta property="og:description" content="Order dairy, frozen foods and groceries — cash on delivery, confirmed by phone.">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 
@@ -34,9 +38,6 @@
           </div>
         </div>
 
-        <button id="theme-toggle" class="btn-round" aria-label="Toggle Dark Mode">
-          🌙
-        </button>
         <button id="cart-toggle" class="btn-round" aria-label="Open Shopping Cart">
           🛒
           <span class="badge cart-count" id="cart-badge-count">0</span>
@@ -66,34 +67,31 @@
     </div>
   </section>
 
-  <!-- Category Section Banners -->
-  <section class="categories-banner">
+  <!-- Order Again (visible to signed-in customers with past orders) -->
+  <section class="reorder-section" id="reorder-section" style="display: none;">
     <div class="container">
-      <div class="section-header">
-        <span class="section-subtitle">Crafted with Care</span>
-        <h2 class="section-title">Explore Categories</h2>
-        <p class="section-desc">From nutrient-rich morning milk essentials to sweet festive gift boxes, browse our organic ranges.</p>
-      </div>
-      
-      <div class="category-grid">
-        <!-- Dairy Category Card -->
-        <div class="category-card" onclick="document.querySelector('[data-category=\'dairy\']').click(); document.getElementById('catalog').scrollIntoView();" id="card-cat-dairy">
-          <img class="category-card-img" src="https://images.unsplash.com/photo-1528750955906-c98ba965e2ec?auto=format&fit=crop&w=600&q=80" alt="Fresh Farm Dairy Products">
-          <div class="category-card-overlay">
-            <span class="category-card-count">Farm Fresh</span>
-            <h3 class="category-card-title">Dairy & Cheese</h3>
-          </div>
+      <div class="reorder-header">
+        <div>
+          <span class="section-subtitle">Welcome back<span id="reorder-user-name"></span></span>
+          <h2 class="section-title">Order Again</h2>
         </div>
-        
-        <!-- Sweets Category Card -->
-        <div class="category-card" onclick="document.querySelector('[data-category=\'frozen\']').click(); document.getElementById('catalog').scrollIntoView();" id="card-cat-frozen">
-          <img class="category-card-img" src="https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=600&q=80" alt="Frozen ready-to-cook foods">
-          <div class="category-card-overlay">
-            <span class="category-card-count">Ready to Cook</span>
-            <h3 class="category-card-title">Frozen Favourites</h3>
-          </div>
-        </div>
+        <button class="btn-primary" id="btn-reorder-last" style="white-space: nowrap;">🔁 Reorder Last Order</button>
       </div>
+
+      <div class="reorder-tabs">
+        <button class="filter-tab active" id="tab-reorder-frequent">⭐ Frequently Ordered</button>
+        <button class="filter-tab" id="tab-reorder-last">🧾 Your Last Order</button>
+      </div>
+
+      <div class="reorder-grid" id="reorder-frequent-grid">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+
+      <div class="reorder-grid" id="reorder-last-grid" style="display: none;">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+
+      <p class="reorder-last-meta" id="reorder-last-meta" style="display: none;"></p>
     </div>
   </section>
 
@@ -164,23 +162,27 @@
           <button class="btn-close" id="modal-close" aria-label="Close modal">&times;</button>
         </div>
         <p class="modal-subtitle">Provide your delivery details to complete your order setup.</p>
-        
+
+        <div class="cod-notice">
+          💵 Only Cash on Delivery is available. Our team will call you shortly to confirm the order.
+        </div>
+
         <form id="checkout-form">
           <div class="form-group">
             <label class="form-label" for="cust-name">Customer Name</label>
             <input type="text" class="form-control" id="cust-name" placeholder="Enter your full name" required>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label" for="cust-phone">Contact Number</label>
-            <input type="tel" class="form-control" id="cust-phone" placeholder="e.g. +1 234 567 890" required>
+            <input type="tel" class="form-control" id="cust-phone" placeholder="e.g. 98765 43210" required>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label" for="cust-address">Delivery Address</label>
             <textarea class="form-control" id="cust-address" rows="3" placeholder="Flat number, building name, street" required></textarea>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label" for="delivery-time">Preferred Delivery Time</label>
             <select class="form-control" id="delivery-time" required>
@@ -191,11 +193,8 @@
           </div>
 
           <div class="checkout-options">
-            <button type="button" class="btn-checkout-opt whatsapp" id="btn-checkout-whatsapp">
-              💬 Send via WhatsApp
-            </button>
             <button type="button" class="btn-checkout-opt owner-alert" id="btn-checkout-dashboard">
-              🔔 Send to Dashboard
+              🔔 Place Order
             </button>
           </div>
         </form>
@@ -265,7 +264,7 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="reg-phone">Phone Number</label>
-            <input type="tel" class="form-control" id="reg-phone" placeholder="e.g. +1 234 567 890" required>
+            <input type="tel" class="form-control" id="reg-phone" placeholder="e.g. 98765 43210" required>
           </div>
           <div class="form-group">
             <label class="form-label" for="reg-address">Delivery Address</label>
@@ -350,7 +349,7 @@
         <ul class="footer-links" style="color: var(--text-secondary); font-size: 0.9rem;">
           <li>Monday - Saturday: 6:00 AM - 9:00 PM</li>
           <li>Sunday: 6:00 AM - 1:00 PM</li>
-          <li>Support: support@khandelwalandsons.com</li>
+          <li>Call / WhatsApp: <a class="footer-link" href="https://wa.me/919321782424">+91 93217 82424</a></li>
         </ul>
       </div>
     </div>
@@ -361,6 +360,6 @@
     </div>
   </footer>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>

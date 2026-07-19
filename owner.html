@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Manage orders, track statistics, and receive live notifications for Khandelwal & Sons.">
   <title>Owner Portal | Khandelwal & Sons Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body class="owner-body">
 
@@ -19,7 +19,7 @@
         
         <form id="admin-auth-form">
           <div class="form-group" style="margin-bottom: 24px;">
-            <input type="password" class="form-control" id="admin-password" placeholder="Password (default: admin)" style="text-align: center;" required>
+            <input type="password" class="form-control" id="admin-password" placeholder="Owner password" style="text-align: center;" required>
           </div>
           <button type="submit" class="btn-primary" style="width: 100%;">Unlock Console</button>
         </form>
@@ -46,9 +46,6 @@
         </button>
         <button id="sound-toggle" class="sound-toggle-btn" aria-label="Toggle Sound Alert">
           🔊 Sound: ON
-        </button>
-        <button id="theme-toggle" class="btn-round" aria-label="Toggle Dark Mode">
-          🌙
         </button>
       </div>
     </div>
@@ -179,6 +176,6 @@
     <span class="toast-text">Success message placeholder</span>
   </div>
 
-  <script src="owner.js"></script>
+  <script src="owner.js?v=4"></script>
 </body>
 </html>
