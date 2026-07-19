@@ -1500,9 +1500,63 @@ button {
   }
 }
 
+/* Floating cart bar */
+.cart-bottom-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%) translateY(120px);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: linear-gradient(135deg, var(--accent-brown), #5c3b24);
+  color: white;
+  padding: 14px 22px;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  z-index: 150;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: transform var(--transition-normal);
+  white-space: nowrap;
+}
+
+.cart-bottom-bar.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+.cart-bar-cta {
+  background: rgba(255, 255, 255, 0.18);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+}
+
+.forgot-password-link {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: var(--accent-brown);
+  background: transparent;
+  text-decoration: underline;
+}
+
+/* Larger phones / small tablets: three cards per row */
+@media(min-width: 481px) and (max-width: 767px) {
+  .products-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
 @media(max-width: 767px) {
   .container {
     padding: 0 14px;
+  }
+  .cart-bottom-bar {
+    width: calc(100% - 24px);
+    justify-content: space-between;
+    padding: 13px 18px;
   }
   .navbar {
     height: 64px;

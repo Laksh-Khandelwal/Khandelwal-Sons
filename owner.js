@@ -16,7 +16,8 @@ const formatCurrency = value => new Intl.NumberFormat('en-IN', {
   style: 'currency', currency: 'INR', maximumFractionDigits: 2
 }).format(value);
 
-const ownerKey = () => sessionStorage.getItem('dd_owner_key') || '';
+// localStorage (not sessionStorage) so the owner stays signed in on this device
+const ownerKey = () => localStorage.getItem('dd_owner_key') || sessionStorage.getItem('dd_owner_key') || '';
 const authHeaders = () => ({ 'x-owner-key': ownerKey(), 'Content-Type': 'application/json' });
 
 // DOM Elements
@@ -131,7 +132,7 @@ async function loadOrders({ silent = false } = {}) {
   try {
     const res = await fetch('/api/owner/orders', { headers: authHeaders() });
     if (res.status === 401) {
-      sessionStorage.removeItem('dd_owner_key');
+      localStorage.removeItem("dd_owner_key"); sessionStorage.removeItem("dd_owner_key");
       checkAdminAuth();
       return;
     }
@@ -391,7 +392,7 @@ function setupEventListeners() {
         });
         const data = await res.json();
         if (data.ok) {
-          sessionStorage.setItem('dd_owner_key', pwd);
+          localStorage.setItem("dd_owner_key", pwd);
           showToast('Admin access unlocked!');
           checkAdminAuth();
           loadOrders();
@@ -407,7 +408,7 @@ function setupEventListeners() {
   // Handle Admin Logout
   if (btnAdminLogout) {
     btnAdminLogout.addEventListener('click', () => {
-      sessionStorage.removeItem('dd_owner_key');
+      localStorage.removeItem("dd_owner_key"); sessionStorage.removeItem("dd_owner_key");
       showToast('Admin console locked.');
       checkAdminAuth();
     });

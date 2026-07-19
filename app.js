@@ -174,6 +174,11 @@ const tabRegister = document.getElementById('tab-register');
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
 const loginModalTitle = document.getElementById('login-modal-title');
+const resetForm = document.getElementById('reset-form');
+const btnForgotPassword = document.getElementById('btn-forgot-password');
+const btnBackToLogin = document.getElementById('btn-back-to-login');
+const cartBottomBar = document.getElementById('cart-bottom-bar');
+const cartBarSummary = document.getElementById('cart-bar-summary');
 
 // Profile Dashboard DOM Elements
 const profileModal = document.getElementById('profile-modal');
@@ -333,7 +338,7 @@ function openSizePicker(productId) {
 
 // Shopping Cart Actions
 function addToCart(productId, variantId, quantity = 1, options = {}) {
-  const { silent = false, openDrawer = true } = options;
+  const { silent = false, openDrawer = false } = options;
   const product = PRODUCTS.find(p => p.id === productId);
   const variant = product?.variants.find(item => item.id === variantId);
   if (!product || !variant) return false;
@@ -414,6 +419,15 @@ function updateCartUI() {
     badge.textContent = totalQty;
     badge.style.display = totalQty > 0 ? 'flex' : 'none';
   });
+
+  // Floating cart bar
+  if (cartBottomBar) {
+    const barTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    if (cartBarSummary) {
+      cartBarSummary.textContent = `🛒 ${totalQty} item${totalQty === 1 ? '' : 's'} · ${formatCurrency(barTotal)}`;
+    }
+    cartBottomBar.classList.toggle('show', cart.length > 0);
+  }
 
   if (cart.length === 0) {
     cartItemsContainer.innerHTML = `
@@ -697,6 +711,9 @@ function setupEventListeners() {
   if (cartToggle && cartDrawer) {
     cartToggle.addEventListener('click', () => cartDrawer.classList.add('open'));
   }
+  if (cartBottomBar && cartDrawer) {
+    cartBottomBar.addEventListener('click', () => cartDrawer.classList.add('open'));
+  }
   if (cartClose && cartDrawer) {
     cartClose.addEventListener('click', () => cartDrawer.classList.remove('open'));
   }
@@ -704,7 +721,7 @@ function setupEventListeners() {
   // Close cart when clicking outside drawer
   document.addEventListener('click', (e) => {
     if (cartDrawer && cartDrawer.classList.contains('open')) {
-      if (!cartDrawer.contains(e.target) && !cartToggle.contains(e.target) && !e.target.classList.contains('btn-add-cart') && !e.target.classList.contains('qty-btn')) {
+      if (!cartDrawer.contains(e.target) && !cartToggle.contains(e.target) && !(cartBottomBar && cartBottomBar.contains(e.target)) && !e.target.classList.contains('btn-add-cart') && !e.target.classList.contains('qty-btn')) {
         cartDrawer.classList.remove('open');
       }
     }
@@ -784,6 +801,7 @@ function setupEventListeners() {
       tabRegister.classList.remove('active');
       loginForm.style.display = 'block';
       registerForm.style.display = 'none';
+      if (resetForm) resetForm.style.display = 'none';
       loginModalTitle.textContent = 'Welcome Back';
     });
 
@@ -792,6 +810,7 @@ function setupEventListeners() {
       tabLogin.classList.remove('active');
       registerForm.style.display = 'block';
       loginForm.style.display = 'none';
+      if (resetForm) resetForm.style.display = 'none';
       loginModalTitle.textContent = 'Create Account';
     });
   }
@@ -815,6 +834,54 @@ function setupEventListeners() {
       } else {
         showToast('Invalid username or password.');
       }
+    });
+  }
+
+  // Forgot password: verify username + registered phone, then set a new password.
+  // Accounts live in this device's browser storage, so the check is local.
+  if (btnForgotPassword) {
+    btnForgotPassword.addEventListener('click', () => {
+      loginForm.style.display = 'none';
+      registerForm.style.display = 'none';
+      resetForm.style.display = 'block';
+      loginModalTitle.textContent = 'Reset Password';
+    });
+  }
+
+  if (btnBackToLogin) {
+    btnBackToLogin.addEventListener('click', () => {
+      resetForm.style.display = 'none';
+      loginForm.style.display = 'block';
+      loginModalTitle.textContent = 'Welcome Back';
+    });
+  }
+
+  if (resetForm) {
+    resetForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('reset-username').value.trim();
+      const phone = document.getElementById('reset-phone').value.replace(/\D/g, '');
+      const newPassword = document.getElementById('reset-password').value;
+
+      const users = JSON.parse(localStorage.getItem('dairy_delights_users') || '[]');
+      const userIndex = users.findIndex(u =>
+        u.username.toLowerCase() === username.toLowerCase() &&
+        String(u.phone || '').replace(/\D/g, '').endsWith(phone.slice(-10)) &&
+        phone.length >= 10
+      );
+
+      if (userIndex === -1) {
+        showToast('Username and phone number do not match our records.');
+        return;
+      }
+
+      users[userIndex].password = newPassword;
+      localStorage.setItem('dairy_delights_users', JSON.stringify(users));
+      showToast('Password reset! Sign in with your new password.');
+      resetForm.reset();
+      resetForm.style.display = 'none';
+      loginForm.style.display = 'block';
+      loginModalTitle.textContent = 'Welcome Back';
     });
   }
 

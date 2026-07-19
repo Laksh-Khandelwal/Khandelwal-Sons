@@ -9,7 +9,7 @@
   <meta property="og:title" content="Khandelwal & Sons | Dairy, Frozen Foods & Groceries">
   <meta property="og:description" content="Order dairy, frozen foods and groceries — cash on delivery, confirmed by phone.">
   <meta property="og:type" content="website">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
@@ -245,6 +245,26 @@
             <input type="password" class="form-control" id="login-password" placeholder="Enter your password" required>
           </div>
           <button type="submit" class="btn-primary" style="width: 100%; margin-top: 12px;">Sign In</button>
+          <button type="button" class="forgot-password-link" id="btn-forgot-password">Forgot password?</button>
+        </form>
+
+        <!-- Password Reset Form -->
+        <form id="reset-form" style="display: none;">
+          <p class="modal-subtitle" style="margin-bottom: 16px;">Verify your account to set a new password.</p>
+          <div class="form-group">
+            <label class="form-label" for="reset-username">Username</label>
+            <input type="text" class="form-control" id="reset-username" placeholder="Your username" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reset-phone">Registered Phone Number</label>
+            <input type="tel" class="form-control" id="reset-phone" placeholder="Phone used at registration" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reset-password">New Password</label>
+            <input type="password" class="form-control" id="reset-password" placeholder="Choose a new password" minlength="4" required>
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; margin-top: 12px;">Reset Password</button>
+          <button type="button" class="forgot-password-link" id="btn-back-to-login">Back to sign in</button>
         </form>
 
         <!-- Register Form -->
@@ -323,6 +343,12 @@
     </div>
   </div>
 
+  <!-- Floating cart bar (appears when the cart has items) -->
+  <button class="cart-bottom-bar" id="cart-bottom-bar" aria-label="View cart">
+    <span id="cart-bar-summary">🛒 0 items · ₹0</span>
+    <span class="cart-bar-cta">View Cart →</span>
+  </button>
+
   <!-- Toast system notification banner -->
   <div class="toast" id="toast-notification">
     <span class="toast-icon">✨</span>
@@ -359,6 +385,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>
