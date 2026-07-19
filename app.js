@@ -420,7 +420,7 @@ function updateCartUI() {
       <div class="cart-empty">
         <div class="cart-empty-icon">🛒</div>
         <h3>Your Cart is Empty</h3>
-        <p>Explore our premium dairy and sweet delicacies to add items.</p>
+        <p>Add items from the catalog.</p>
       </div>
     `;
     cartSubtotal.textContent = formatCurrency(0);
@@ -1132,12 +1132,13 @@ async function handleOrderSubmission(type) {
   // Send the order to the shop's backend (database + WhatsApp alert).
   const submitBtn = checkoutForm.querySelector('.btn-checkout-opt');
   orderSubmitting = true;
-  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Placing order…'; }
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Placing order… (can take up to a minute)'; }
 
   let delivered = false;
   try {
+    // Generous timeout: a sleeping free-tier server can take up to a minute to wake
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12000);
+    const timer = setTimeout(() => controller.abort(), 90000);
     const res = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

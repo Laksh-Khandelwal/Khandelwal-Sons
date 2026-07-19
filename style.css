@@ -1501,6 +1501,39 @@ button {
 }
 
 @media(max-width: 767px) {
+  .container {
+    padding: 0 14px;
+  }
+  .navbar {
+    height: 64px;
+  }
+  .nav-links {
+    display: none; /* Home/Catalog links hidden on phones; everything is reachable by scrolling */
+  }
+  .logo {
+    font-size: 1.15rem;
+  }
+  .btn-round {
+    width: 38px;
+    height: 38px;
+  }
+  .nav-actions {
+    gap: 8px;
+  }
+  .hero {
+    padding-top: 96px;
+    padding-bottom: 40px;
+  }
+  .hero-description {
+    font-size: 1rem;
+    margin-bottom: 24px;
+  }
+  .hero-img {
+    max-width: 300px;
+  }
+  .section-header {
+    margin-bottom: 28px;
+  }
   .reorder-grid {
     grid-template-columns: 1fr;
   }
@@ -1514,9 +1547,38 @@ button {
   .catalog-controls {
     flex-direction: column;
     align-items: stretch;
+    padding: 12px 14px;
   }
   .search-box {
     max-width: 100%;
+  }
+  /* Always two product cards per row on phones */
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .product-img-wrapper {
+    height: 110px;
+  }
+  .product-info {
+    padding: 10px;
+  }
+  .product-title {
+    font-size: 0.85rem;
+  }
+  .product-price {
+    font-size: 0.95rem;
+  }
+  .btn-add-cart {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8rem;
+  }
+  .modal-body {
+    padding: 20px;
+  }
+  .modal-overlay {
+    padding: 12px;
   }
   .checkout-options {
     grid-template-columns: 1fr;
