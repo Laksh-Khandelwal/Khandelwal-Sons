@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Full order history with search and date-wise sorting for Khandelwal & Sons.">
+  <title>Order History | Khandelwal & Sons Dashboard</title>
+  <link rel="stylesheet" href="style.css?v=12">
+</head>
+<body class="owner-body">
+
+  <!-- Admin Authentication Overlay -->
+  <div id="admin-auth-overlay" class="modal-overlay" style="opacity: 1; visibility: visible; display: flex; background: var(--bg-primary);">
+    <div class="modal-content" style="max-width: 360px; text-align: center; border: 1px solid var(--border-glass); margin: auto;">
+      <div class="modal-body" style="padding: 40px 32px;">
+        <div class="logo-icon" style="width: 72px; height: 72px; margin: 0 auto 20px;"><img src="images/logo.png" alt="Khandelwal & Sons logo"></div>
+        <h3 class="modal-title" style="margin-bottom: 8px;">Admin Console</h3>
+        <p class="modal-subtitle" style="margin-bottom: 24px;">Enter the owner password to access order history.</p>
+
+        <form id="admin-auth-form">
+          <div class="form-group" style="margin-bottom: 24px;">
+            <input type="password" class="form-control" id="admin-password" placeholder="Owner password" style="text-align: center;" required>
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%;">Unlock Console</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Header -->
+  <header class="navbar">
+    <div class="container navbar-container">
+      <a href="index.html" class="logo" id="owner-logo">
+        <div class="logo-icon"><img src="images/logo.png" alt="Khandelwal & Sons logo"></div>
+        Khandelwal<span>Admin</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Storefront</a>
+        <a href="owner.html" class="nav-link">Orders Console</a>
+        <a href="order-history.html" class="nav-link active">Order History</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="btn-admin-logout" class="btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; border-radius: var(--radius-full);">
+          🚪 Log Out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dashboard Content -->
+  <main class="container">
+    <div class="section-header" style="text-align: left; margin-bottom: 24px; max-width: 100%;">
+      <span class="section-subtitle">Records & Reporting</span>
+      <h1 class="section-title">Order History</h1>
+      <p class="section-desc">Browse every order placed to date. Search by customer, order ID, or item, and sort chronologically.</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">📚</div>
+        <div class="stat-info">
+          <span class="stat-label">Total Orders</span>
+          <span class="stat-value" id="hist-total-orders">0</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <span class="stat-label">Total Revenue</span>
+          <span class="stat-value" id="hist-total-revenue">₹0.00</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔎</div>
+        <div class="stat-info">
+          <span class="stat-label">Showing</span>
+          <span class="stat-value" id="hist-showing">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <section class="orders-section" style="margin-bottom: 24px;">
+      <div class="history-controls">
+        <div class="history-search">
+          <span class="history-search-icon">🔍</span>
+          <input type="search" id="hist-search" class="form-control" placeholder="Search by order ID, customer, phone, or item…" aria-label="Search orders">
+        </div>
+
+        <div class="history-control-group">
+          <label for="hist-sort" class="history-control-label">Sort</label>
+          <select id="hist-sort" class="order-status-select" aria-label="Sort orders by date">
+            <option value="date-desc">Date: Newest first</option>
+            <option value="date-asc">Date: Oldest first</option>
+            <option value="total-desc">Amount: High to low</option>
+            <option value="total-asc">Amount: Low to high</option>
+          </select>
+        </div>
+
+        <div class="history-control-group">
+          <label for="hist-status" class="history-control-label">Status</label>
+          <select id="hist-status" class="order-status-select" aria-label="Filter orders by status">
+            <option value="all">All statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="Preparing">Preparing</option>
+            <option value="Out for Delivery">Out for Delivery</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+
+        <div class="history-control-group">
+          <label for="hist-from" class="history-control-label">From</label>
+          <input type="date" id="hist-from" class="order-status-select" aria-label="From date">
+        </div>
+
+        <div class="history-control-group">
+          <label for="hist-to" class="history-control-label">To</label>
+          <input type="date" id="hist-to" class="order-status-select" aria-label="To date">
+        </div>
+
+        <button type="button" id="hist-reset" class="btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; border-radius: var(--radius-full);">Reset</button>
+      </div>
+    </section>
+
+    <!-- History Table -->
+    <section class="orders-section">
+      <div class="history-table-wrap">
+        <table class="history-table" id="history-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Date &amp; Time</th>
+              <th>Customer</th>
+              <th class="num">Items</th>
+              <th class="num">Total</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody">
+            <!-- Rendered dynamically by order-history.js -->
+          </tbody>
+        </table>
+      </div>
+      <div id="history-empty" class="no-orders" style="display: none;">
+        <div class="no-orders-icon">📋</div>
+        <h3>No matching orders</h3>
+        <p>Try adjusting your search, date range, or status filter.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast-notification">
+    <span class="toast-icon">✨</span>
+    <span class="toast-text">Success message placeholder</span>
+  </div>
+
+  <script src="order-history.js?v=1"></script>
+</body>
+</html>

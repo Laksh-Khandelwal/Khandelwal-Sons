@@ -9,7 +9,7 @@
   <meta property="og:title" content="Khandelwal & Sons | Dairy, Frozen Foods & Groceries">
   <meta property="og:description" content="Order dairy, frozen foods and groceries — cash on delivery, confirmed by phone.">
   <meta property="og:type" content="website">
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
 
@@ -365,6 +365,21 @@
 
         <!-- Profile Order History Panel -->
         <div id="panel-profile-history" style="display: none;">
+          <div class="history-controls" style="margin-bottom: 20px;">
+            <div class="history-search">
+              <span class="history-search-icon">🔍</span>
+              <input type="search" id="profile-order-search" class="form-control" placeholder="Search by order ID or item…" aria-label="Search your orders">
+            </div>
+            <div class="history-control-group">
+              <label for="profile-order-sort" class="history-control-label">Sort</label>
+              <select id="profile-order-sort" class="order-status-select" aria-label="Sort your orders by date">
+                <option value="date-desc">Date: Newest first</option>
+                <option value="date-asc">Date: Oldest first</option>
+                <option value="total-desc">Amount: High to low</option>
+                <option value="total-asc">Amount: Low to high</option>
+              </select>
+            </div>
+          </div>
           <div id="profile-orders-list">
             <!-- Order history rendered dynamically -->
           </div>
@@ -420,6 +435,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=11"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>

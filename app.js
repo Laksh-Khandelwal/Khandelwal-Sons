@@ -202,6 +202,13 @@ const profileNameInput = document.getElementById('profile-name');
 const profilePhoneInput = document.getElementById('profile-phone');
 const profileAddressInput = document.getElementById('profile-address');
 const profileOrdersList = document.getElementById('profile-orders-list');
+const profileOrderSearch = document.getElementById('profile-order-search');
+const profileOrderSort = document.getElementById('profile-order-sort');
+
+// User order-history view state
+let currentUserOrders = [];
+let userOrderSearch = '';
+let userOrderSort = 'date-desc';
 const sizeModal = document.getElementById('size-modal');
 const sizeModalClose = document.getElementById('size-modal-close');
 const sizeProductTitle = document.getElementById('size-product-title');
@@ -1035,6 +1042,20 @@ function setupEventListeners() {
     });
   }
 
+  // Customer order-history search + sort controls
+  if (profileOrderSearch) {
+    profileOrderSearch.addEventListener('input', (e) => {
+      userOrderSearch = e.target.value;
+      renderOrderHistoryCards(currentUserOrders);
+    });
+  }
+  if (profileOrderSort) {
+    profileOrderSort.addEventListener('change', (e) => {
+      userOrderSort = e.target.value;
+      renderOrderHistoryCards(currentUserOrders);
+    });
+  }
+
   // Handle Profile Settings Update
   if (profileSettingsForm) {
     profileSettingsForm.addEventListener('submit', (e) => {
@@ -1156,15 +1177,18 @@ function renderUserOrderHistory() {
         });
         if (changed) {
           localStorage.setItem('dairy_delights_orders', JSON.stringify(allOrders));
-          renderOrderHistoryCards(userOrders);
+          currentUserOrders = allOrders.filter(o => o.username === session.username);
+          renderOrderHistoryCards(currentUserOrders);
         }
       })
       .catch(() => {}); // offline/local mode: keep stored statuses
   }
 
-  renderOrderHistoryCards(userOrders);
+  currentUserOrders = userOrders;
+  renderOrderHistoryCards(currentUserOrders);
 }
 
+// Apply the customer's search term + date/amount sort, then render.
 function renderOrderHistoryCards(userOrders) {
   if (!profileOrdersList) return;
 
@@ -1179,7 +1203,41 @@ function renderOrderHistoryCards(userOrders) {
     return;
   }
 
-  userOrders.forEach(order => {
+  const term = userOrderSearch.trim().toLowerCase();
+  let rows = userOrders.filter(order => {
+    if (!term) return true;
+    const blob = [
+      order.id,
+      order.status,
+      (order.items || []).map(i => i.name).join(' ')
+    ].filter(Boolean).join(' ').toLowerCase();
+    return blob.includes(term);
+  });
+
+  const time = o => {
+    const t = new Date(o.timestamp).getTime();
+    return isNaN(t) ? 0 : t;
+  };
+  rows = rows.slice().sort((a, b) => {
+    switch (userOrderSort) {
+      case 'date-asc': return time(a) - time(b);
+      case 'total-desc': return b.total - a.total;
+      case 'total-asc': return a.total - b.total;
+      case 'date-desc':
+      default: return time(b) - time(a);
+    }
+  });
+
+  if (rows.length === 0) {
+    profileOrdersList.innerHTML = `
+      <div style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+        <p>No orders match your search.</p>
+      </div>
+    `;
+    return;
+  }
+
+  rows.forEach(order => {
     let itemSnippets = '';
     order.items.forEach(item => {
       itemSnippets += `<li>${item.name} (${item.quantity}x) - ${formatCurrency(item.price * item.quantity)}</li>`;
