@@ -146,17 +146,22 @@ button {
 }
 
 .logo-icon {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--accent-gold), var(--accent-brown));
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border: 1px solid var(--border-light);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 0.9rem;
-  font-family: var(--font-sans);
-  font-weight: bold;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.logo-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .nav-links {
