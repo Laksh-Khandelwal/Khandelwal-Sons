@@ -23,8 +23,12 @@ const authHeaders = () => ({ 'x-owner-key': ownerKey(), 'Content-Type': 'applica
 // DOM Elements
 const ordersList = document.getElementById('orders-list');
 const orderFilterStatus = document.getElementById('order-filter-status');
-const btnClearOrders = document.getElementById('btn-clear-orders');
 const soundToggle = document.getElementById('sound-toggle');
+
+// History elements
+const historyList = document.getElementById('history-list');
+const historyToggleBtns = document.querySelectorAll('.history-toggle-btn');
+let historyRange = 'daily';
 
 // Admin Auth DOM Elements
 const adminAuthOverlay = document.getElementById('admin-auth-overlay');
@@ -142,6 +146,7 @@ async function loadOrders({ silent = false } = {}) {
     const fetched = (data.orders || []).map(row => ({
       id: row.id,
       timestamp: row.placed_at || row.created_at,
+      createdAt: row.created_at || row.placed_at,
       username: row.username,
       customer: row.customer,
       items: row.items,
@@ -162,6 +167,7 @@ async function loadOrders({ silent = false } = {}) {
     orders = fetched;
     renderOrders();
     calculateStats();
+    renderHistory();
   } catch (err) {
     console.error('Failed to load orders:', err);
     if (!silent) showToast('Could not load orders: ' + err.message);
@@ -312,6 +318,7 @@ async function deleteOrder(orderId) {
     knownOrderIds = new Set(orders.map(o => o.id));
     renderOrders();
     calculateStats();
+    renderHistory();
     showToast(`Order ${orderId} removed`);
   } catch (err) {
     showToast('Could not remove order: ' + err.message);
@@ -376,6 +383,54 @@ function calculateStats() {
   }
 }
 
+// Render concise order history, grouped by day or month
+function renderHistory() {
+  if (!historyList) return;
+
+  if (orders.length === 0) {
+    historyList.innerHTML = `<p class="history-empty">No orders yet.</p>`;
+    return;
+  }
+
+  const groups = new Map(); // key -> { sortKey, label, count, revenue }
+
+  orders.forEach(order => {
+    const d = new Date(order.createdAt || order.timestamp);
+    if (isNaN(d.getTime())) return;
+
+    let sortKey, label;
+    if (historyRange === 'monthly') {
+      sortKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      label = d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+    } else {
+      sortKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      label = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    if (!groups.has(sortKey)) {
+      groups.set(sortKey, { sortKey, label, count: 0, revenue: 0 });
+    }
+    const g = groups.get(sortKey);
+    g.count += 1;
+    g.revenue += order.total;
+  });
+
+  const rows = Array.from(groups.values()).sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+
+  if (rows.length === 0) {
+    historyList.innerHTML = `<p class="history-empty">No dated orders to summarize.</p>`;
+    return;
+  }
+
+  historyList.innerHTML = rows.map(g => `
+    <div class="history-row">
+      <span class="history-period">${g.label}</span>
+      <span class="history-count">${g.count} ${g.count === 1 ? 'order' : 'orders'}</span>
+      <span class="history-revenue">${formatCurrency(g.revenue)}</span>
+    </div>
+  `).join('');
+}
+
 // Setup Event Listeners
 function setupEventListeners() {
   // Handle Admin Password unlock (verified server-side)
@@ -414,24 +469,14 @@ function setupEventListeners() {
     });
   }
 
-  // Clear all orders
-  if (btnClearOrders) {
-    btnClearOrders.addEventListener('click', async () => {
-      if (!confirm('Are you sure you want to clear all order logs? This will reset all analytics.')) return;
-      try {
-        const res = await fetch('/api/owner/orders', { method: 'DELETE', headers: authHeaders() });
-        const data = await res.json();
-        if (!data.ok) throw new Error(data.error || 'Clear failed');
-        orders = [];
-        knownOrderIds = new Set();
-        renderOrders();
-        calculateStats();
-        showToast('All order logs cleared');
-      } catch (err) {
-        showToast('Could not clear orders: ' + err.message);
-      }
+  // History range toggle (Daily / Monthly)
+  historyToggleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      historyRange = btn.getAttribute('data-range');
+      historyToggleBtns.forEach(b => b.classList.toggle('active', b === btn));
+      renderHistory();
     });
-  }
+  });
 
   // Filter Status
   if (orderFilterStatus) {

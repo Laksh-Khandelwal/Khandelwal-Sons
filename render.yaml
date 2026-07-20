@@ -13,6 +13,7 @@ services:
       - key: SUPABASE_SERVICE_KEY
         sync: false
       - key: OWNER_PASSWORD
+        value: "shivay123"
         sync: false
       - key: WHATSAPP_TOKEN
         sync: false

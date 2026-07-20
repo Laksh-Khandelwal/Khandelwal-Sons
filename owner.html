@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Manage orders, track statistics, and receive live notifications for Khandelwal & Sons.">
   <title>Owner Portal | Khandelwal & Sons Dashboard</title>
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body class="owner-body">
 
@@ -113,10 +113,6 @@
               <option value="Out for Delivery">Out for Delivery</option>
               <option value="Completed">Completed</option>
             </select>
-            <!-- Clear Button -->
-            <button id="btn-clear-orders" class="btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; border-radius: var(--radius-sm);">
-              Clear Logs
-            </button>
           </div>
         </div>
 
@@ -153,18 +149,18 @@
           </div>
         </div>
 
-        <!-- Simulator Helper Box -->
-        <div class="panel-card" style="background: var(--accent-cream); border-color: var(--accent-gold);">
-          <h3 class="panel-title" style="color: var(--accent-brown); border-bottom-color: var(--border-glass);">Simulator Guide</h3>
-          <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px;">
-            To test real-time ordering:
-          </p>
-          <ol style="font-size: 0.85rem; color: var(--text-secondary); margin-left: 20px; line-height: 1.6;">
-            <li>Keep this Dashboard page open in one window.</li>
-            <li>Open the <a href="index.html" target="_blank" style="text-decoration: underline; font-weight: 600; color: var(--accent-brown);">Storefront</a> in another window.</li>
-            <li>Add items to your cart, fill the checkout form, and click <strong>"Send to Dashboard"</strong>.</li>
-            <li>You will hear a live notification sound here, and the order details will update instantly without page refreshes!</li>
-          </ol>
+        <!-- Order History Summary -->
+        <div class="panel-card" id="history-panel">
+          <div class="history-header">
+            <h3 class="panel-title" style="margin-bottom: 0; border-bottom: none;">Order History</h3>
+            <div class="history-toggle" role="tablist">
+              <button type="button" class="history-toggle-btn active" data-range="daily">Daily</button>
+              <button type="button" class="history-toggle-btn" data-range="monthly">Monthly</button>
+            </div>
+          </div>
+          <div class="history-list" id="history-list">
+            <!-- Rendered dynamically by owner.js -->
+          </div>
         </div>
       </aside>
     </div>
@@ -176,6 +172,6 @@
     <span class="toast-text">Success message placeholder</span>
   </div>
 
-  <script src="owner.js?v=5"></script>
+  <script src="owner.js?v=6"></script>
 </body>
 </html>

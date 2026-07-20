@@ -1928,3 +1928,84 @@ button {
   color: var(--text-muted);
 }
 
+
+/* --- Order History Panel --- */
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.history-toggle {
+  display: inline-flex;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-full);
+  padding: 3px;
+}
+
+.history-toggle-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 5px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-radius: var(--radius-full);
+  transition: all 0.2s ease;
+}
+
+.history-toggle-btn.active {
+  background: var(--accent-brown);
+  color: #fff;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.history-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--border-glass);
+  font-size: 0.85rem;
+}
+
+.history-row:last-child {
+  border-bottom: none;
+}
+
+.history-period {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.history-count {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.history-revenue {
+  font-weight: 700;
+  color: var(--accent-brown);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.history-empty {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: 8px 0;
+}
