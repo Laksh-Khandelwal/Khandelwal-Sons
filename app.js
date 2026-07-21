@@ -85,13 +85,45 @@ const PRODUCT_IMAGE_RULES = [
 
 const getProductImage = (name, category) => {
   const label = name.toLowerCase();
-  // Sweets: only a few have real photos; the rest use the category image so
-  // generic keyword rules (e.g. "milk" in Milk Barfi) can't misfire.
+  // Sweets: match each mithai to its own pack-shot. Order matters — more
+  // specific names (e.g. "coconut barfi") must come before generic ones
+  // ("barfi"), so keep the specific rules above the broader fallbacks.
   if (category === 'sweets') {
-    if (/\bhalwa\b/.test(label)) return 'images/halwa.jpg';
-    if (/\bpeda\b/.test(label)) return 'images/mathura-peda.jpg';
-    if (/panchmeva/.test(label)) return 'images/panchmeva.jpg';
-    return CATEGORY_DETAILS.sweets.image;
+    const SWEET_IMAGE_RULES = [
+      [/coconut\s*barfi/, 'Coconut_Barfi.jpg'],
+      [/kaju\s*katli/, 'Kaju_Katli.jpg'],
+      [/motichoor/, 'Motichoor_Laddu.jpg'],
+      [/besan\s*lad+[ou]/, 'Besan_Laddu.jpg'],
+      [/boondi/, 'Boondi_Laddu.jpg'],
+      [/rasmalai/, 'Rasmalai.jpg'],
+      [/rasgulla/, 'Rasgulla.jpg'],
+      [/jalebi/, 'Jalebi.jpg'],
+      [/imarti|imrati/, 'Imarti.jpg'],
+      [/soan\s*papdi/, 'Soan_Papdi.jpg'],
+      [/patisa/, 'Patisa.jpg'],
+      [/mysore\s*pak/, 'Mysore_Pak.jpg'],
+      [/kalakand/, 'Kalakand.jpg'],
+      [/milk\s*cake/, 'Milk_Cake.jpg'],
+      [/milk\s*barfi|barfi/, 'Barfi.jpg'],
+      [/balushahi/, 'Balushahi.jpg'],
+      [/ghe(v|w)ar/, 'Ghewar.jpg'],
+      [/malpua/, 'Malpua.jpg'],
+      [/modak/, 'Modak.jpg'],
+      [/cham\s*cham/, 'Cham_Cham.jpg'],
+      [/sandesh/, 'Sandesh.jpg'],
+      [/shrikhand/, 'Shrikhand.jpg'],
+      [/basundi/, 'Basundi.jpg'],
+      [/rab(ri|di)/, 'Rabri.jpg'],
+      [/phirni/, 'Phirni.jpg'],
+      [/kheer/, 'Kheer.jpg'],
+      [/puran\s*poli/, 'Puran_Poli.jpg'],
+      [/\bpeda\b/, 'Peda.jpg'],
+      [/panchmeva/, 'panchmeva.jpg'],
+      [/\bhalwa\b/, 'halwa.jpg'],
+      [/lad+[ou]/, 'Laddu.jpg']
+    ];
+    const sweet = SWEET_IMAGE_RULES.find(([pattern]) => pattern.test(label));
+    return sweet ? `images/${sweet[1]}` : CATEGORY_DETAILS.sweets.image;
   }
   const rule = PRODUCT_IMAGE_RULES.find(([pattern]) => pattern.test(label));
   return rule ? `images/${rule[1]}` : CATEGORY_DETAILS[category].image;
