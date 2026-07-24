@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Private dashboards and API — keep out of search results
+Disallow: /owner.html
+Disallow: /products-admin.html
+Disallow: /order-history.html
+Disallow: /api/
+
+Sitemap: https://khandelwalandsons.in/sitemap.xml

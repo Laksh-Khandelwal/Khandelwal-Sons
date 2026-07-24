@@ -3,13 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Khandelwal & Sons — dairy, frozen foods and groceries. Order online, cash on delivery.">
-  <title>Khandelwal & Sons | Dairy, Frozen Foods & Groceries</title>
+
+  <!-- Preconnect + async font load (replaces the render-blocking CSS @import) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+
+  <title>Khandelwal &amp; Sons | Dairy, Frozen Foods &amp; Groceries Online</title>
+  <meta name="description" content="Shop dairy, cheese, frozen foods, Indian sweets, snacks &amp; groceries at Khandelwal &amp; Sons. Order online for home delivery — cash on delivery, confirmed by phone.">
+  <link rel="canonical" href="https://khandelwalandsons.in/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#8B5E3C">
   <link rel="icon" href="images/logo.png">
-  <meta property="og:title" content="Khandelwal & Sons | Dairy, Frozen Foods & Groceries">
-  <meta property="og:description" content="Order dairy, frozen foods and groceries — cash on delivery, confirmed by phone.">
+
+  <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
+  <meta property="og:site_name" content="Khandelwal &amp; Sons">
+  <meta property="og:title" content="Khandelwal &amp; Sons | Dairy, Frozen Foods &amp; Groceries Online">
+  <meta property="og:description" content="Order dairy, cheese, frozen foods, Indian sweets, snacks and groceries for home delivery — cash on delivery, confirmed by phone.">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://khandelwalandsons.in/">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:image" content="https://khandelwalandsons.in/images/shop-2.png">
+  <meta property="og:image:alt" content="Khandelwal &amp; Sons storefront">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Khandelwal &amp; Sons | Dairy, Frozen Foods &amp; Groceries Online">
+  <meta name="twitter:description" content="Order dairy, cheese, frozen foods, Indian sweets, snacks and groceries for home delivery — cash on delivery.">
+  <meta name="twitter:image" content="https://khandelwalandsons.in/images/shop-2.png">
+
   <link rel="stylesheet" href="style.css?v=12">
+  <!-- Paste your Google OAuth Client ID here to enable "Sign in with Google" -->
+  <meta name="google-client-id" content="">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -17,7 +43,7 @@
   <header class="navbar">
     <div class="container navbar-container">
       <a href="index.html" class="logo" id="store-logo">
-        <div class="logo-icon"><img src="images/logo.png" alt="Khandelwal & Sons logo"></div>
+        <div class="logo-icon"><img src="images/logo.png" alt="Khandelwal & Sons logo" width="160" height="160" fetchpriority="high"></div>
         Khandelwal<span>&Sons</span>
       </a>
       
@@ -63,11 +89,11 @@
       <div class="hero-image-wrapper">
         <div class="hero-image-bg"></div>
         <div class="hero-carousel" id="hero-carousel">
-          <img src="images/shop-2.png" alt="Khandelwal & Sons storefront" class="active">
-          <img src="images/shop-1.png" alt="Fresh sweets counter">
-          <img src="images/shop-4.png" alt="Chocolates fridge">
-          <img src="images/shop-3.png" alt="Sweets and snacks display">
-          <img src="images/shop-5.png" alt="Snacks shelves">
+          <img src="images/shop-2.png" alt="Khandelwal & Sons storefront exterior" class="active" width="294" height="220" fetchpriority="high" decoding="async">
+          <img src="images/shop-1.png" alt="Fresh Indian sweets counter at Khandelwal & Sons" width="294" height="220" loading="lazy" decoding="async">
+          <img src="images/shop-4.png" alt="Chocolates fridge stocked with dairy products" width="294" height="220" loading="lazy" decoding="async">
+          <img src="images/shop-3.png" alt="Sweets and snacks display shelf" width="294" height="220" loading="lazy" decoding="async">
+          <img src="images/shop-5.png" alt="Snacks and grocery shelves" width="294" height="220" loading="lazy" decoding="async">
         </div>
       </div>
     </div>
@@ -298,6 +324,14 @@
           <button class="modal-tab-btn" id="tab-register">Register</button>
         </div>
 
+        <!-- Google Sign-In -->
+        <div id="google-signin-wrap" style="margin: 16px 0;">
+          <div id="google-signin-btn" style="display:flex; justify-content:center; min-height:40px;"></div>
+          <div style="display:flex; align-items:center; gap:10px; margin:14px 0; color:var(--text-muted); font-size:0.8rem;">
+            <span style="flex:1; height:1px; background:var(--border-glass);"></span> or <span style="flex:1; height:1px; background:var(--border-glass);"></span>
+          </div>
+        </div>
+
         <!-- Login Form -->
         <form id="login-form">
           <div class="form-group">
@@ -470,6 +504,55 @@
     </div>
   </footer>
 
-  <script src="app.js?v=13"></script>
+  <!-- Structured data: helps Google show the shop's name, hours, phone and logo.
+       TODO for owner: fill in streetAddress / addressLocality / postalCode below. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "GroceryStore",
+        "@id": "https://khandelwalandsons.in/#store",
+        "name": "Khandelwal & Sons",
+        "description": "Dairy, cheese, frozen foods, Indian sweets, snacks and groceries with home delivery and cash on delivery.",
+        "url": "https://khandelwalandsons.in/",
+        "logo": "https://khandelwalandsons.in/images/logo.png",
+        "image": "https://khandelwalandsons.in/images/shop-2.png",
+        "telephone": "+91-93217-82424",
+        "priceRange": "₹₹",
+        "currenciesAccepted": "INR",
+        "paymentAccepted": "Cash on Delivery",
+        "areaServed": "IN",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "IN"
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+            "opens": "06:00",
+            "closes": "21:00"
+          },
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": "Sunday",
+            "opens": "06:00",
+            "closes": "13:00"
+          }
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://khandelwalandsons.in/#website",
+        "name": "Khandelwal & Sons",
+        "url": "https://khandelwalandsons.in/",
+        "publisher": { "@id": "https://khandelwalandsons.in/#store" }
+      }
+    ]
+  }
+  </script>
+
+  <script src="app.js?v=13" defer></script>
 </body>
 </html>

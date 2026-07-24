@@ -4,7 +4,8 @@
   "description": "Khandelwal & Sons storefront with WhatsApp order notifications",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "optimize-images": "python scripts/optimize_images.py"
   },
   "engines": {
     "node": ">=18"

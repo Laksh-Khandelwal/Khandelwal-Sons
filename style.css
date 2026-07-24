@@ -3,7 +3,8 @@
   Colors, typography, glassmorphism, transitions and animations
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+/* Fonts are loaded via <link rel="preconnect"> + <link rel="stylesheet"> in the HTML
+   <head> (faster than @import, which forces an extra render-blocking round-trip). */
 
 :root {
   /* Dynamic Palette */
@@ -636,7 +637,8 @@ button {
 }
 
 .product-img-wrapper {
-  height: 140px;
+  width: 100%;
+  aspect-ratio: 1 / 1;      /* fixed square box — reserves space, prevents layout shift (CLS) */
   overflow: hidden;
   position: relative;
   background: #FBF9F6; /* neutral backdrop so contained pack-shots look intentional */
@@ -645,8 +647,9 @@ button {
 .product-img {
   width: 100%;
   height: 100%;
-  object-fit: contain; /* show the whole product instead of cropping it */
-  padding: 10px;
+  object-fit: contain;       /* show the whole product instead of cropping it */
+  object-position: center;   /* keep it centred in the square */
+  padding: 8px;
   transition: transform var(--transition-slow);
 }
 
@@ -1600,7 +1603,7 @@ button {
 }
 
 .bestseller-card .product-img-wrapper {
-  height: 120px;
+  aspect-ratio: 1 / 1;   /* keep best-seller thumbnails square too */
 }
 
 /* Floating WhatsApp button */
@@ -1761,7 +1764,7 @@ button {
     gap: 12px;
   }
   .product-img-wrapper {
-    height: 110px;
+    aspect-ratio: 1 / 1;   /* stay square on mobile so the grid never shifts */
   }
   .product-info {
     padding: 10px;

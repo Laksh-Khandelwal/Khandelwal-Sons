@@ -1,0 +1,6 @@
+# Background removal runs the U2Net model directly through onnxruntime — no rembg,
+# pymatting, or numba (whose unsigned native DLLs are blocked by Windows Smart App
+# Control / Application Control policies). These three wheels ship signed binaries.
+pillow>=10.0
+numpy>=1.24
+onnxruntime>=1.16

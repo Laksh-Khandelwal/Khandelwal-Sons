@@ -18,6 +18,67 @@ const CATEGORY_DETAILS = {
 // so the shop owner can add/edit products from the admin page without a redeploy.
 let PRODUCTS = [];
 
+// Optimised-image manifest (written by scripts/optimize_images.py). Tells us which
+// product images have responsive WebP variants so we can emit <img srcset>. Empty
+// until loaded — helpers fall back to the original image when a stem isn't listed.
+const OPTIMIZED = {
+  dir: 'images/optimized',
+  sizes: [400, 800, 1200],
+  canvas: 1200,
+  images: new Set(),
+};
+
+// Load the manifest once at startup. Safe to fail: we just skip srcset if missing.
+async function loadImageManifest() {
+  try {
+    const res = await fetch(`${OPTIMIZED.dir}/manifest.json`, { cache: 'no-cache' });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (Array.isArray(data.sizes)) OPTIMIZED.sizes = data.sizes;
+    if (Number.isFinite(data.canvas)) OPTIMIZED.canvas = data.canvas;
+    if (Array.isArray(data.images)) OPTIMIZED.images = new Set(data.images);
+  } catch (err) {
+    console.warn('Optimised-image manifest not available; using original images.', err);
+  }
+}
+
+// Given a stored image path like "images/Kaju_Katli.jpg", return its manifest key
+// ("Kaju_Katli") if it points at a local product image, else null.
+function optimizedStem(src) {
+  if (typeof src !== 'string') return null;
+  const m = src.match(/^images\/(.+)\.(jpe?g|png|webp)$/i);
+  if (!m) return null;
+  const stem = m[1];
+  return OPTIMIZED.images.has(stem) ? stem : null;
+}
+
+/**
+ * Build a responsive, layout-stable <img> for a product.
+ * Uses optimised WebP srcset when available; otherwise falls back to the original
+ * file. Always sets width/height + a square box so cards never shift layout (CLS).
+ */
+function productImg(product, { className = 'product-img', sizes = '(max-width: 600px) 45vw, (max-width: 960px) 30vw, 240px' } = {}) {
+  const alt = escapeAttr(product.name || 'Product');
+  const stem = optimizedStem(product.image);
+  const c = OPTIMIZED.canvas;
+  if (stem) {
+    const srcset = OPTIMIZED.sizes
+      .map(s => `${OPTIMIZED.dir}/${stem}-${s}.webp ${s}w`)
+      .join(', ');
+    const fallback = `${OPTIMIZED.dir}/${stem}-${OPTIMIZED.sizes.includes(800) ? 800 : OPTIMIZED.sizes[0]}.webp`;
+    return `<img class="${className}" src="${fallback}" srcset="${srcset}" sizes="${sizes}"` +
+           ` width="${c}" height="${c}" alt="${alt}" loading="lazy" decoding="async">`;
+  }
+  return `<img class="${className}" src="${escapeAttr(product.image || '')}"` +
+         ` width="${c}" height="${c}" alt="${alt}" loading="lazy" decoding="async">`;
+}
+
+// Minimal attribute escaper for values interpolated into HTML strings.
+function escapeAttr(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+                  .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 // Neutral placeholder shown if a product image fails to load (missing file, bad URL…).
 const IMG_PLACEHOLDER = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
   "<svg xmlns='http://www.w3.org/2000/svg' width='200' height='140'><rect width='100%' height='100%' fill='#FBF9F6'/><text x='50%' y='45%' font-size='30' text-anchor='middle' dominant-baseline='middle'>🛍️</text><text x='50%' y='72%' font-size='11' fill='#9C948D' font-family='sans-serif' text-anchor='middle'>Image coming soon</text></svg>"
@@ -156,10 +217,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderCategoryCards();
   setupEventListeners();
   syncLoginUI();
+  initGoogleSignIn();
   if (productsGrid) {
     productsGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:48px 16px;color:#9a8f80">Loading products…</p>';
   }
-  await loadProducts();
+  await Promise.all([loadProducts(), loadImageManifest()]);
   loadCartFromStorage();
   renderBestSellers();
   renderFrequentlyOrderedShowcase();
@@ -256,7 +318,7 @@ function showcaseCardHtml(product) {
   return `
     <div class="product-card bestseller-card">
       <div class="product-img-wrapper">
-        <img class="product-img" src="${product.image}" alt="${product.name}" loading="lazy">
+        ${productImg(product, { sizes: '(max-width: 600px) 45vw, 220px' })}
       </div>
       <div class="product-info">
         <h3 class="product-title">${product.name}</h3>
@@ -328,7 +390,7 @@ function renderCatalog() {
     card.className = 'product-card';
     card.innerHTML = `
       <div class="product-img-wrapper">
-        <img class="product-img" src="${product.image}" alt="${product.name}" loading="lazy">
+        ${productImg(product)}
       </div>
       <div class="product-info">
         <h3 class="product-title">${product.name}</h3>
@@ -509,6 +571,62 @@ function updateCartUI() {
 }
 
 // User Authenticated UI Synchronization
+// ---------- Google Sign-In ----------
+function decodeJwtPayload(token) {
+  try {
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const json = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+    return JSON.parse(json);
+  } catch (e) { return null; }
+}
+
+function handleGoogleCredential(response) {
+  const profile = decodeJwtPayload(response.credential);
+  if (!profile || !profile.email) { showToast('Google sign-in failed. Please try again.'); return; }
+  const users = JSON.parse(localStorage.getItem('dairy_delights_users') || '[]');
+  const username = profile.email.toLowerCase();
+  let user = users.find(u => (u.username || '').toLowerCase() === username);
+  if (!user) {
+    user = {
+      username,
+      name: profile.name || profile.email.split('@')[0],
+      phone: '',
+      address: '',
+      email: profile.email,
+      picture: profile.picture || '',
+      google: true
+    };
+    users.push(user);
+    localStorage.setItem('dairy_delights_users', JSON.stringify(users));
+  }
+  localStorage.setItem('dairy_delights_session', JSON.stringify(user));
+  if (loginModal) loginModal.classList.remove('open');
+  syncLoginUI();
+  if (typeof renderReorderSection === 'function') renderReorderSection();
+  showToast(`Welcome, ${user.name}!`);
+}
+
+// Initialize the Google button once the GSI library and Client ID are available.
+function initGoogleSignIn() {
+  const meta = document.querySelector('meta[name="google-client-id"]');
+  const clientId = meta && meta.content ? meta.content.trim() : '';
+  const wrap = document.getElementById('google-signin-wrap');
+  const btn = document.getElementById('google-signin-btn');
+  if (!clientId || !btn) { if (wrap) wrap.style.display = 'none'; return; } // hide neatly until configured
+  let tries = 0;
+  const tryInit = () => {
+    if (window.google && google.accounts && google.accounts.id) {
+      google.accounts.id.initialize({ client_id: clientId, callback: handleGoogleCredential });
+      google.accounts.id.renderButton(btn, { theme: 'outline', size: 'large', width: 320, text: 'signin_with', shape: 'pill' });
+    } else if (tries++ < 40) {
+      setTimeout(tryInit, 150);
+    } else if (wrap) {
+      wrap.style.display = 'none';
+    }
+  };
+  tryInit();
+}
+
 function syncLoginUI() {
   const session = JSON.parse(localStorage.getItem('dairy_delights_session'));
   if (session) {
@@ -672,7 +790,7 @@ function buildReorderCard({ product, variant, badge, quantity = 1 }) {
   const card = document.createElement('div');
   card.className = 'reorder-card';
   card.innerHTML = `
-    <img class="reorder-card-img" src="${product.image}" alt="${product.name}" loading="lazy">
+    ${productImg(product, { className: 'reorder-card-img', sizes: '64px' })}
     <div class="reorder-card-body">
       <h4 class="reorder-card-title" title="${product.name}">${product.name}</h4>
       <span class="reorder-card-meta">${variant.size}<span class="reorder-badge">${badge}</span></span>
