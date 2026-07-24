@@ -3,8 +3,9 @@
  * Serves the static storefront and relays incoming orders to the shop
  * owner's WhatsApp via Meta's WhatsApp Business Cloud API.
  *
- * Two delivery providers are supported — set the env vars for ONE of them
- * (in Render → Environment). If both are set, CallMeBot wins.
+ * Three delivery providers are supported — set the env vars for ONE of them
+ * (in Render → Environment). Precedence if several are set:
+ * CallMeBot → Green API → Meta.
  *
  * Option A - CallMeBot (simplest): the shop phone sends the WhatsApp message
  * "I allow callmebot to send me messages" to CallMeBot's number
@@ -12,7 +13,14 @@
  * receives an API key.
  *   CALLMEBOT_APIKEY          The API key received on WhatsApp
  *
- * Option B - Meta WhatsApp Business Cloud API (official):
+ * Option B - Green API (unofficial gateway, free developer tier): create an
+ * instance at https://green-api.com, link the shop's WhatsApp by scanning the
+ * QR code, then copy the instance credentials from the console.
+ *   GREENAPI_ID_INSTANCE      The instance ID (e.g. 1101000001)
+ *   GREENAPI_API_TOKEN        The instance API token
+ *   GREENAPI_API_URL          Optional API host. Default: https://api.green-api.com
+ *
+ * Option C - Meta WhatsApp Business Cloud API (official):
  *   WHATSAPP_TOKEN            Meta permanent access token
  *   WHATSAPP_PHONE_NUMBER_ID  Phone Number ID from the Meta app's WhatsApp setup page
  *   WHATSAPP_TEMPLATE         Optional approved template name. If set, orders are sent
@@ -37,12 +45,18 @@ const PORT = process.env.PORT || 3000;
 
 const OWNER_WHATSAPP = (process.env.OWNER_WHATSAPP || '919321782424').replace(/\D/g, '');
 const CALLMEBOT_APIKEY = process.env.CALLMEBOT_APIKEY || '';
+const GREENAPI_ID_INSTANCE = process.env.GREENAPI_ID_INSTANCE || '';
+const GREENAPI_API_TOKEN = process.env.GREENAPI_API_TOKEN || '';
+const GREENAPI_API_URL = (process.env.GREENAPI_API_URL || 'https://api.green-api.com').replace(/\/+$/, '');
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || '';
 const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID || '';
 const TEMPLATE_NAME = process.env.WHATSAPP_TEMPLATE || '';
 const GRAPH_URL = `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`;
 
-const PROVIDER = CALLMEBOT_APIKEY ? 'callmebot' : (WHATSAPP_TOKEN && PHONE_NUMBER_ID) ? 'meta' : 'none';
+const PROVIDER = CALLMEBOT_APIKEY ? 'callmebot'
+  : (GREENAPI_ID_INSTANCE && GREENAPI_API_TOKEN) ? 'greenapi'
+  : (WHATSAPP_TOKEN && PHONE_NUMBER_ID) ? 'meta'
+  : 'none';
 
 const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
@@ -113,14 +127,34 @@ async function sendViaCallMeBot(text) {
   return { sent: true };
 }
 
+async function sendViaGreenApi(text) {
+  const url = `${GREENAPI_API_URL}/waInstance${GREENAPI_ID_INSTANCE}/sendMessage/${GREENAPI_API_TOKEN}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chatId: `${OWNER_WHATSAPP}@c.us`, message: text })
+  });
+  const body = await res.json().catch(() => ({}));
+  // A successful send returns an object with an idMessage field
+  if (!res.ok || !body?.idMessage) {
+    console.error('[whatsapp:greenapi] Send failed:', res.status, JSON.stringify(body).slice(0, 300));
+    return { sent: false, reason: body?.message || `greenapi_${res.status}` };
+  }
+  return { sent: true };
+}
+
 async function sendWhatsApp(text) {
   if (PROVIDER === 'none') {
-    console.warn('[whatsapp] Not configured (set CALLMEBOT_APIKEY, or WHATSAPP_TOKEN + WHATSAPP_PHONE_NUMBER_ID). Message that would have been sent:\n' + text);
+    console.warn('[whatsapp] Not configured (set CALLMEBOT_APIKEY, or GREENAPI_ID_INSTANCE + GREENAPI_API_TOKEN, or WHATSAPP_TOKEN + WHATSAPP_PHONE_NUMBER_ID). Message that would have been sent:\n' + text);
     return { sent: false, reason: 'not_configured' };
   }
 
   if (PROVIDER === 'callmebot') {
     return sendViaCallMeBot(text);
+  }
+
+  if (PROVIDER === 'greenapi') {
+    return sendViaGreenApi(text);
   }
 
   const payload = TEMPLATE_NAME
@@ -306,7 +340,7 @@ app.use(express.static(path.join(__dirname), { extensions: ['html'] }));
 
 app.listen(PORT, () => {
   console.log(`Khandelwal & Sons server running on port ${PORT}`);
-  console.log(`WhatsApp notifications: ${PROVIDER === 'none' ? 'NOT configured (set CALLMEBOT_APIKEY, or WHATSAPP_TOKEN + WHATSAPP_PHONE_NUMBER_ID)' : `via ${PROVIDER} → ${OWNER_WHATSAPP}`}`);
+  console.log(`WhatsApp notifications: ${PROVIDER === 'none' ? 'NOT configured (set CALLMEBOT_APIKEY, or GREENAPI_ID_INSTANCE + GREENAPI_API_TOKEN, or WHATSAPP_TOKEN + WHATSAPP_PHONE_NUMBER_ID)' : `via ${PROVIDER} → ${OWNER_WHATSAPP}`}`);
   console.log(`Order database: ${DB_ENABLED ? 'Supabase configured' : 'NOT configured (set SUPABASE_URL and SUPABASE_SERVICE_KEY)'}`);
   if (OWNER_PASSWORD === 'admin') console.warn('WARNING: OWNER_PASSWORD is still the default "admin" — set a strong one in the environment.');
 });
