@@ -39,6 +39,7 @@
 
 const express = require('express');
 const path = require('path');
+const { buildSeedProducts } = require('./catalog-seed');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -288,6 +289,65 @@ app.get('/api/orders/status', async (req, res) => {
   }
 });
 
+// ---------- Products API ----------
+
+// Normalize a product payload coming from the admin form into the shape we store.
+function normalizeProductInput(body) {
+  const name = String(body.name || '').trim();
+  const category = String(body.category || '').trim();
+  const image_url = String(body.image_url || body.image || '').trim();
+  const rawVariants = Array.isArray(body.variants) ? body.variants : [];
+  const variants = rawVariants
+    .map((v, i) => ({
+      id: String(v.id || `v-${Date.now().toString(36)}-${i}`),
+      size: (String(v.size || '').trim() || 'Standard'),
+      price: Number(v.price) || 0,
+      stock: Number(v.stock) || 0
+    }))
+    .filter(v => v.price >= 0);
+  return { name, category, image_url, variants };
+}
+
+// Seed the products table from the original catalog the first time it is empty.
+async function seedProductsIfEmpty() {
+  if (!DB_ENABLED) return;
+  try {
+    const existing = await sb('/products?select=id&limit=1');
+    if (Array.isArray(existing) && existing.length > 0) {
+      console.log('[products] Table already populated — skipping seed.');
+      return;
+    }
+    const seed = buildSeedProducts();
+    await sb('/products', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify(seed)
+    });
+    console.log(`[products] Seeded ${seed.length} products into Supabase.`);
+  } catch (err) {
+    console.error('[products] Seed failed:', err.message);
+  }
+}
+
+// Public: full catalog for the storefront, shaped like the old client-side PRODUCTS.
+app.get('/api/products', async (_req, res) => {
+  if (!DB_ENABLED) return res.json({ ok: true, products: [] });
+  try {
+    const rows = await sb('/products?select=*&order=sort_order.asc,name.asc');
+    const products = rows.map(r => ({
+      id: r.id,
+      name: r.name,
+      category: r.category,
+      image: r.image_url,
+      variants: Array.isArray(r.variants) ? r.variants : []
+    }));
+    res.json({ ok: true, products });
+  } catch (err) {
+    console.error('[products] list failed:', err.message);
+    res.status(502).json({ ok: false, error: err.message });
+  }
+});
+
 // ---------- Owner API (requires x-owner-key header) ----------
 
 app.post('/api/owner/login', (req, res) => {
@@ -344,6 +404,63 @@ app.delete('/api/owner/orders', requireOwner, async (_req, res) => {
   }
 });
 
+// ----- Owner: product management -----
+
+app.get('/api/owner/products', requireOwner, async (_req, res) => {
+  if (!DB_ENABLED) return res.status(503).json({ ok: false, error: 'Database not configured' });
+  try {
+    const rows = await sb('/products?select=*&order=sort_order.asc,name.asc');
+    res.json({ ok: true, products: rows });
+  } catch (err) {
+    res.status(502).json({ ok: false, error: err.message });
+  }
+});
+
+app.post('/api/owner/products', requireOwner, async (req, res) => {
+  if (!DB_ENABLED) return res.status(503).json({ ok: false, error: 'Database not configured' });
+  const n = normalizeProductInput(req.body);
+  if (!n.name || !n.category || n.variants.length === 0) {
+    return res.status(400).json({ ok: false, error: 'Name, category and at least one size/price are required.' });
+  }
+  const id = (String(req.body.id || '').trim()) || ('p-' + Date.now().toString(36));
+  try {
+    const rows = await sb('/products', {
+      method: 'POST',
+      body: JSON.stringify({ id, ...n, sort_order: Number(req.body.sort_order) || 999 })
+    });
+    res.json({ ok: true, product: rows[0] });
+  } catch (err) {
+    res.status(502).json({ ok: false, error: err.message });
+  }
+});
+
+app.patch('/api/owner/products/:id', requireOwner, async (req, res) => {
+  if (!DB_ENABLED) return res.status(503).json({ ok: false, error: 'Database not configured' });
+  const n = normalizeProductInput(req.body);
+  if (!n.name || !n.category || n.variants.length === 0) {
+    return res.status(400).json({ ok: false, error: 'Name, category and at least one size/price are required.' });
+  }
+  try {
+    const rows = await sb(`/products?id=eq.${encodeURIComponent(req.params.id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ ...n, sort_order: Number(req.body.sort_order) || 0, updated_at: new Date().toISOString() })
+    });
+    res.json({ ok: true, updated: rows.length, product: rows[0] });
+  } catch (err) {
+    res.status(502).json({ ok: false, error: err.message });
+  }
+});
+
+app.delete('/api/owner/products/:id', requireOwner, async (req, res) => {
+  if (!DB_ENABLED) return res.status(503).json({ ok: false, error: 'Database not configured' });
+  try {
+    await sb(`/products?id=eq.${encodeURIComponent(req.params.id)}`, { method: 'DELETE' });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(502).json({ ok: false, error: err.message });
+  }
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
@@ -362,4 +479,6 @@ app.listen(PORT, () => {
   console.log(`WhatsApp notifications: ${PROVIDER === 'none' ? 'NOT configured (set CALLMEBOT_APIKEY, or GREENAPI_ID_INSTANCE + GREENAPI_API_TOKEN, or WHATSAPP_TOKEN + WHATSAPP_PHONE_NUMBER_ID)' : `via ${PROVIDER} → ${OWNER_WHATSAPP}`}`);
   console.log(`Order database: ${DB_ENABLED ? 'Supabase configured' : 'NOT configured (set SUPABASE_URL and SUPABASE_SERVICE_KEY)'}`);
   if (OWNER_PASSWORD === 'admin') console.warn('WARNING: OWNER_PASSWORD is still the default "admin" — set a strong one in the environment.');
+  // One-time: populate the products table from the built-in catalog if it's empty.
+  seedProductsIfEmpty();
 });
