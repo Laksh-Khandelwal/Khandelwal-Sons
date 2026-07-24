@@ -1342,6 +1342,49 @@ function showOrderSuccess(orderId, delivered) {
   modal.onclick = e => { if (e.target === modal) close(); };
 
   modal.classList.add('open');
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce) launchConfetti();
+}
+
+// Lightweight canvas confetti burst — no library, cleans itself up.
+function launchConfetti() {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:400';
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const colors = ['#C5A880', '#D96B62', '#F5B041', '#8B5E3C', '#EED9B6', '#7FB77E'];
+  const parts = Array.from({ length: 150 }, () => ({
+    x: canvas.width / 2 + (Math.random() - 0.5) * 220,
+    y: canvas.height * 0.32,
+    vx: (Math.random() - 0.5) * 9,
+    vy: Math.random() * -7 - 3,
+    g: 0.17 + Math.random() * 0.12,
+    size: 5 + Math.random() * 6,
+    rot: Math.random() * Math.PI,
+    vrot: (Math.random() - 0.5) * 0.35,
+    color: colors[Math.floor(Math.random() * colors.length)]
+  }));
+  const start = performance.now();
+  const DURATION = 2600;
+  function frame(now) {
+    const t = now - start;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    parts.forEach(p => {
+      p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vrot;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.globalAlpha = Math.max(0, 1 - t / DURATION);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+      ctx.restore();
+    });
+    if (t < DURATION) requestAnimationFrame(frame);
+    else canvas.remove();
+  }
+  requestAnimationFrame(frame);
 }
 
 // Helper: Clear Cart

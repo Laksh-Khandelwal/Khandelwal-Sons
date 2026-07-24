@@ -99,38 +99,33 @@ app.use(express.json({ limit: '12mb' })); // 12mb headroom for base64 product im
 // ---------- WhatsApp helpers ----------
 
 function formatOrderMessage(order) {
-  const RULE = '━━━━━━━━━━━━━━';
+  // Neat price: drop the ".00" on whole amounts (₹530 instead of ₹530.00).
+  const money = n => {
+    const v = Number(n) || 0;
+    return '₹' + (Number.isInteger(v) ? v : v.toFixed(2));
+  };
+  const c = order.customer || {};
   const lines = [];
 
-  // Header
-  lines.push('🧾 *NEW ORDER*');
-  lines.push(`Order ID: ${order.id}`);
-  if (order.timestamp) lines.push(`Placed: ${order.timestamp}`);
-  lines.push(RULE);
+  lines.push(`🧾 *New Order* — ${order.id}`);
+  if (order.timestamp) lines.push(`🕒 ${order.timestamp}`);
+  lines.push('');
 
-  // Customer block
-  lines.push('👤 *Customer*');
-  lines.push(`Name: ${order.customer.name}${order.username && order.username !== 'Guest' ? ` (@${order.username})` : ''}`);
-  lines.push(`Phone: ${order.customer.phone}`);
-  lines.push(`Address: ${order.customer.address}`);
-  lines.push(`Delivery: ${order.customer.deliveryTime}`);
-  lines.push(RULE);
+  lines.push('*Customer*');
+  lines.push(`${c.name}${order.username && order.username !== 'Guest' ? ` (@${order.username})` : ''}`);
+  lines.push(`📞 ${c.phone}`);
+  lines.push(`📍 ${c.address}`);
+  if (c.deliveryTime) lines.push(`🚚 ${c.deliveryTime}`);
+  lines.push('');
 
-  // Items block (numbered, with per-line subtotal)
-  lines.push('🛒 *Items*');
-  let totalQty = 0;
-  order.items.forEach((item, i) => {
-    totalQty += item.quantity;
+  lines.push('*Items*');
+  order.items.forEach(item => {
     const unit = item.unit && item.unit !== 'Standard' ? ` (${item.unit})` : '';
-    lines.push(`${i + 1}. ${item.name}${unit}`);
-    lines.push(`    ${item.quantity} × ₹${item.price.toFixed(2)} = ₹${(item.price * item.quantity).toFixed(2)}`);
+    lines.push(`• ${item.quantity}× ${item.name}${unit} — ${money(item.price * item.quantity)}`);
   });
-  lines.push(RULE);
+  lines.push('');
 
-  // Summary block
-  lines.push(`📦 Items: ${order.items.length}  |  Qty: ${totalQty}`);
-  lines.push(`💰 *Total: ₹${order.total.toFixed(2)}*`);
-  lines.push('💵 Payment: Cash on Delivery');
+  lines.push(`*Total: ${money(order.total)}*  ·  Cash on Delivery`);
 
   return lines.join('\n');
 }

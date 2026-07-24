@@ -2226,3 +2226,43 @@ button {
   /* Show ~2-3 dated rows, scroll for the rest, then the "view complete" link */
   .history-list { max-height: 148px; }
 }
+
+/* ---------- Order Success: extra animation ---------- */
+.success-check { position: relative; }
+.success-check::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--accent-gold);
+  opacity: 0;
+  animation: successRipple 0.9s 0.25s ease-out forwards;
+}
+@keyframes successRipple {
+  0%   { transform: scale(0.85); opacity: 0.55; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+
+/* Staggered entrance of the modal content */
+#order-success-modal.open .modal-title,
+#order-success-modal.open #success-order-msg,
+#order-success-modal.open #success-order-id,
+#order-success-modal.open .success-actions {
+  animation: successRise 0.5s ease both;
+}
+#order-success-modal.open .modal-title    { animation-delay: 0.35s; }
+#order-success-modal.open #success-order-msg { animation-delay: 0.45s; }
+#order-success-modal.open #success-order-id  { animation-delay: 0.55s; }
+#order-success-modal.open .success-actions   { animation-delay: 0.62s; }
+@keyframes successRise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .success-check::after,
+  #order-success-modal.open .modal-title,
+  #order-success-modal.open #success-order-msg,
+  #order-success-modal.open #success-order-id,
+  #order-success-modal.open .success-actions { animation: none; }
+}
