@@ -2269,3 +2269,86 @@ button {
   #order-success-modal.open #success-order-id,
   #order-success-modal.open .success-actions { animation: none; }
 }
+
+/* ============================================================
+   ADMIN PAGES — MOBILE / RESPONSIVE
+   Owner console, order history and product manager. Most of the
+   shop's traffic is on phones, so these pages must work one-handed.
+   Storefront mobile behaviour is untouched.
+   ============================================================ */
+@media (max-width: 767px) {
+  /* Admin navbar becomes two rows: brand + actions on top, then a
+     horizontal scrollable pill strip. Without this the four admin
+     links inherit .nav-links{display:none} and disappear on phones,
+     stranding the owner with no way to move between admin pages. */
+  .admin-page .navbar { height: auto; min-height: 60px; padding: 8px 0; }
+  .admin-page .navbar-container { flex-wrap: wrap; row-gap: 8px; column-gap: 8px; }
+  .admin-page .logo { font-size: 1.05rem; flex: 1 1 auto; min-width: 0; }
+  .admin-page .nav-actions { gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .admin-page .nav-actions .btn-secondary,
+  .admin-page .sound-toggle-btn {
+    padding: 6px 12px !important;
+    font-size: 0.78rem !important;
+    margin: 0 !important;
+  }
+
+  .admin-page .nav-links.admin-nav {
+    display: flex;
+    order: 3;
+    flex-basis: 100%;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin: 0 -14px;                 /* bleed the strip to the screen edges */
+    padding: 2px 14px;
+  }
+  .admin-page .nav-links.admin-nav::-webkit-scrollbar { display: none; }
+  .admin-page .nav-links.admin-nav .nav-link {
+    white-space: nowrap;
+    padding: 7px 14px;
+    border-radius: var(--radius-full);
+    background: var(--accent-cream);
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+  }
+  .admin-page .nav-links.admin-nav .nav-link.active {
+    background: var(--accent-gold);
+    color: #fff;
+  }
+  .admin-page .nav-links.admin-nav .nav-link::after { display: none; }
+
+  /* Room under the taller two-row navbar */
+  .admin-page.owner-body { padding-top: 126px; }
+  .admin-page .pm-main { padding-top: 130px; }
+
+  /* Login / password overlays */
+  .admin-page .modal-overlay { padding: 16px; }
+  .admin-page .modal-content .modal-body { padding: 28px 22px !important; }
+  .admin-page .modal-title { font-size: 1.4rem; }
+  /* 16px inputs stop iOS Safari from auto-zooming when they get focus */
+  .admin-page .form-control,
+  .admin-page input[type="password"],
+  .admin-page input[type="text"],
+  .admin-page input[type="number"],
+  .admin-page select { font-size: 16px; }
+
+  /* Owner dashboard */
+  .admin-page .section-title { font-size: 1.6rem; }
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .stat-card { padding: 16px; gap: 12px; }
+  .stat-icon { width: 44px; height: 44px; font-size: 1.2rem; }
+  .stat-value { font-size: 1.3rem; }
+  .stat-label { font-size: 0.72rem; }
+  .orders-section { padding: 18px 16px; }
+  .orders-header { flex-direction: column; align-items: stretch; gap: 14px; }
+  .orders-actions { width: 100%; }
+  .orders-actions #export-orders-btn,
+  .orders-actions .order-status-select { flex: 1; }
+  .panel-card { padding: 18px 16px; }
+}
+
+/* Very small phones: one stat card per row so numbers never truncate */
+@media (max-width: 380px) {
+  .stats-row { grid-template-columns: 1fr; }
+}

@@ -18,59 +18,39 @@ const CATEGORY_DETAILS = {
 // so the shop owner can add/edit products from the admin page without a redeploy.
 let PRODUCTS = [];
 
-// Optimised-image manifest (written by scripts/optimize_images.py). Tells us which
-// product images have responsive WebP variants so we can emit <img srcset>. Empty
-// until loaded — helpers fall back to the original image when a stem isn't listed.
-const OPTIMIZED = {
-  dir: 'images/optimized',
-  sizes: [400, 800, 1200],
-  canvas: 1200,
-  images: new Set(),
-};
+// All images are served from Supabase Storage. Product image_urls arrive as absolute
+// Supabase URLs from /api/products; the base below is only needed to build the
+// decorative category-tile URLs client-side. Fetched once from /api/config.
+let SUPABASE_BASE = '';
+const IMG_BOX = 1200; // square box we reserve for every product image (prevents CLS)
 
-// Load the manifest once at startup. Safe to fail: we just skip srcset if missing.
-async function loadImageManifest() {
+async function loadConfig() {
   try {
-    const res = await fetch(`${OPTIMIZED.dir}/manifest.json`, { cache: 'no-cache' });
+    const res = await fetch('/api/config', { cache: 'no-cache' });
     if (!res.ok) return;
     const data = await res.json();
-    if (Array.isArray(data.sizes)) OPTIMIZED.sizes = data.sizes;
-    if (Number.isFinite(data.canvas)) OPTIMIZED.canvas = data.canvas;
-    if (Array.isArray(data.images)) OPTIMIZED.images = new Set(data.images);
+    if (data && data.supabaseUrl) SUPABASE_BASE = String(data.supabaseUrl).replace(/\/+$/, '');
   } catch (err) {
-    console.warn('Optimised-image manifest not available; using original images.', err);
+    console.warn('Config not available; category tiles will use fallback images.', err);
   }
 }
 
-// Given a stored image path like "images/Kaju_Katli.jpg", return its manifest key
-// ("Kaju_Katli") if it points at a local product image, else null.
-function optimizedStem(src) {
-  if (typeof src !== 'string') return null;
-  const m = src.match(/^images\/(.+)\.(jpe?g|png|webp)$/i);
-  if (!m) return null;
-  const stem = m[1];
-  return OPTIMIZED.images.has(stem) ? stem : null;
+// Supabase URL for a category placeholder tile, with the old Unsplash link as a
+// safety net if config hasn't loaded.
+function categoryImage(key, fallback) {
+  return SUPABASE_BASE
+    ? `${SUPABASE_BASE}/storage/v1/object/public/product-images/catalog/category-${key}.jpg`
+    : (fallback || '');
 }
 
 /**
- * Build a responsive, layout-stable <img> for a product.
- * Uses optimised WebP srcset when available; otherwise falls back to the original
- * file. Always sets width/height + a square box so cards never shift layout (CLS).
+ * Build a layout-stable <img> for a product. The src is the product's absolute
+ * Supabase URL. A fixed square box keeps cards from shifting layout (CLS).
  */
-function productImg(product, { className = 'product-img', sizes = '(max-width: 600px) 45vw, (max-width: 960px) 30vw, 240px' } = {}) {
+function productImg(product, { className = 'product-img' } = {}) {
   const alt = escapeAttr(product.name || 'Product');
-  const stem = optimizedStem(product.image);
-  const c = OPTIMIZED.canvas;
-  if (stem) {
-    const srcset = OPTIMIZED.sizes
-      .map(s => `${OPTIMIZED.dir}/${stem}-${s}.webp ${s}w`)
-      .join(', ');
-    const fallback = `${OPTIMIZED.dir}/${stem}-${OPTIMIZED.sizes.includes(800) ? 800 : OPTIMIZED.sizes[0]}.webp`;
-    return `<img class="${className}" src="${fallback}" srcset="${srcset}" sizes="${sizes}"` +
-           ` width="${c}" height="${c}" alt="${alt}" loading="lazy" decoding="async">`;
-  }
   return `<img class="${className}" src="${escapeAttr(product.image || '')}"` +
-         ` width="${c}" height="${c}" alt="${alt}" loading="lazy" decoding="async">`;
+         ` width="${IMG_BOX}" height="${IMG_BOX}" alt="${alt}" loading="lazy" decoding="async">`;
 }
 
 // Minimal attribute escaper for values interpolated into HTML strings.
@@ -214,6 +194,7 @@ let lastOrderSnapshot = null;
 document.addEventListener('DOMContentLoaded', async () => {
   initUsersDB();
   startHeroCarousel();
+  await loadConfig();          // resolve Supabase base before rendering image tiles
   renderCategoryCards();
   setupEventListeners();
   syncLoginUI();
@@ -221,12 +202,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (productsGrid) {
     productsGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:48px 16px;color:#9a8f80">Loading products…</p>';
   }
-  await Promise.all([loadProducts(), loadImageManifest()]);
+  await loadProducts();
   loadCartFromStorage();
   renderBestSellers();
   renderFrequentlyOrderedShowcase();
   renderCatalog();
+  openProductFromDeepLink();
 });
+
+// If arriving from an SEO product page (/?p=<id>#catalog), open that product's
+// size picker so the visitor lands straight on the item they were viewing.
+function openProductFromDeepLink() {
+  try {
+    const id = new URLSearchParams(location.search).get('p');
+    if (!id) return;
+    if (!PRODUCTS.some(p => p.id === id)) return;
+    const catalog = document.getElementById('catalog');
+    if (catalog) catalog.scrollIntoView({ behavior: 'smooth' });
+    openSizePicker(id);
+    // Clean the URL so a refresh doesn't re-open the picker.
+    history.replaceState(null, '', '/' + location.hash);
+  } catch (_) { /* non-critical */ }
+}
 
 // Initialize User Mock DB with a default testing user
 function initUsersDB() {
@@ -299,7 +296,7 @@ function renderCategoryCards() {
 
   wrap.innerHTML = Object.entries(CATEGORY_DETAILS).map(([key, cat]) => `
     <button class="category-card-mini" data-category="${key}">
-      <img src="${cat.image}" alt="${cat.label}" loading="lazy">
+      <img src="${categoryImage(key, cat.image)}" alt="${cat.label}" loading="lazy">
       <span>${cat.label}</span>
     </button>
   `).join('');

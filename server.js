@@ -40,6 +40,7 @@
 const express = require('express');
 const path = require('path');
 const { buildSeedProducts } = require('./catalog-seed');
+const ssr = require('./ssr');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -529,6 +530,73 @@ app.get('/api/health', (_req, res) => {
     whatsappConfigured: PROVIDER !== 'none',
     dbConfigured: DB_ENABLED
   });
+});
+
+// Public front-end config. Exposes ONLY the project URL + bucket (never the key)
+// so the client can build Supabase Storage image URLs (e.g. category tiles).
+app.get('/api/config', (_req, res) => {
+  res.json({ ok: true, supabaseUrl: SUPABASE_URL, imageBucket: 'product-images' });
+});
+
+// ---------- SEO: server-rendered category & product pages + sitemap ----------
+
+// Catalog for SSR, shaped like the storefront's PRODUCTS. Cached briefly so
+// crawlers hitting many URLs don't hammer the database.
+let ssrCache = { at: 0, products: null, slugMap: null };
+const SSR_TTL = 5 * 60 * 1000;
+
+async function getSsrCatalog() {
+  if (ssrCache.products && Date.now() - ssrCache.at < SSR_TTL) return ssrCache;
+  let products;
+  if (DB_ENABLED) {
+    const rows = await sb('/products?select=*&order=sort_order.asc,name.asc');
+    products = rows.map(r => ({
+      id: r.id, name: r.name, category: r.category,
+      image: r.image_url, variants: Array.isArray(r.variants) ? r.variants : [],
+      tags: Array.isArray(r.tags) ? r.tags : []
+    }));
+  } else {
+    products = buildSeedProducts().map(r => ({
+      id: r.id, name: r.name, category: r.category,
+      image: r.image_url, variants: r.variants || [], tags: []
+    }));
+  }
+  ssrCache = { at: Date.now(), products, slugMap: ssr.buildSlugMap(products) };
+  return ssrCache;
+}
+
+app.get('/sitemap.xml', async (_req, res) => {
+  try {
+    const { products, slugMap } = await getSsrCatalog();
+    res.type('application/xml').send(ssr.renderSitemap(products, slugMap));
+  } catch (err) {
+    console.error('[seo] sitemap failed:', err.message);
+    res.status(500).type('application/xml').send('<?xml version="1.0"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
+  }
+});
+
+app.get('/category/:slug', async (req, res, next) => {
+  try {
+    const { products, slugMap } = await getSsrCatalog();
+    const html = ssr.renderCategoryPage(req.params.slug, products, slugMap);
+    if (!html) return next(); // unknown category → fall through to 404/static
+    res.type('html').send(html);
+  } catch (err) {
+    console.error('[seo] category page failed:', err.message);
+    next();
+  }
+});
+
+app.get('/product/:slug', async (req, res, next) => {
+  try {
+    const { products, slugMap } = await getSsrCatalog();
+    const html = ssr.renderProductPage(req.params.slug, products, slugMap);
+    if (!html) return next();
+    res.type('html').send(html);
+  } catch (err) {
+    console.error('[seo] product page failed:', err.message);
+    next();
+  }
 });
 
 // ---------- Static site ----------

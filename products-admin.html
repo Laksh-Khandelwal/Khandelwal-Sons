@@ -48,9 +48,33 @@
     .pm-add-variant { margin-top: 8px; background: transparent; border: 1px dashed var(--border-light); color: var(--accent-gold-hover); padding: 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; width: 100%; }
     .pm-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
     .pm-img-preview { width: 48px; height: 48px; object-fit: cover; border-radius: var(--radius-sm); margin-top: 8px; background: #f0ece6; display: none; }
+
+    /* ---- Product manager on phones ---- */
+    @media (max-width: 600px) {
+      .pm-main { padding-left: 14px; padding-right: 14px; }
+      .pm-head { gap: 12px; }
+      .pm-head h1 { font-size: 1.4rem; }
+      .pm-tools { width: 100%; }
+      .pm-search { flex: 1 1 100%; min-width: 0; font-size: 16px; }
+      .pm-tools .pm-btn-primary { flex: 1 1 100%; }
+      /* Product rows: image + name on top, actions on a full-width row below */
+      .pm-row { grid-template-columns: 48px 1fr; row-gap: 10px; padding: 12px; }
+      .pm-row img { width: 48px; height: 48px; }
+      .pm-row-actions { grid-column: 1 / -1; }
+      .pm-row-actions button { flex: 1; }
+      /* Add / edit modal */
+      .pm-modal { padding: 12px; }
+      .pm-modal-card { padding: 20px 16px; }
+      .pm-modal-actions { flex-direction: column-reverse; }
+      .pm-modal-actions .pm-btn { width: 100%; }
+      .pm-field input, .pm-field select { font-size: 16px; }
+      .pm-variant-head,
+      .pm-variant-row { grid-template-columns: 1.3fr 1fr 1fr 28px; gap: 6px; }
+      .pm-variant-row input { padding: 8px; font-size: 16px; }
+    }
   </style>
 </head>
-<body>
+<body class="admin-page">
 
   <!-- Owner password gate -->
   <div id="admin-auth-overlay" class="modal-overlay" style="opacity: 1; visibility: visible; display: flex; background: var(--bg-primary); position: fixed; inset: 0; align-items: center; justify-content: center; z-index: 2000;">
@@ -72,7 +96,7 @@
         <div class="logo-icon"><img src="images/logo.png" alt="Khandelwal &amp; Sons logo"></div>
         Khandelwal<span>&amp;Sons</span>
       </a>
-      <nav class="nav-links">
+      <nav class="nav-links admin-nav">
         <a href="index.html" class="nav-link">Storefront</a>
         <a href="owner.html" class="nav-link">Orders Console</a>
         <a href="products-admin.html" class="nav-link active">Products</a>

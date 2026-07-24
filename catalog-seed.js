@@ -16,14 +16,21 @@ const STOCK_ITEMS = [
   ['Gulab Jamun 1kg',15,320,'sweets'],['Rasgulla 1kg',12,280,'sweets'],['Kaju Katli 500gm',10,450,'sweets'],['Motichoor Ladoo 500gm',14,260,'sweets'],['Besan Ladoo 500gm',12,240,'sweets'],['Rasmalai 1kg',8,360,'sweets'],['Jalebi 500gm',20,180,'sweets'],['Milk Barfi 500gm',10,300,'sweets'],['Soan Papdi 500gm',18,160,'sweets'],['Mysore Pak 500gm',9,320,'sweets'],['Kalakand 500gm',8,340,'sweets'],['Milk Cake 500gm',10,330,'sweets'],['Gajar Halwa 500gm',6,280,'sweets'],['Moong Dal Halwa 500gm',6,320,'sweets'],['Balushahi 500gm',10,220,'sweets'],['Imarti 500gm',8,200,'sweets'],['Agra Petha 500gm',12,180,'sweets'],['Ghevar 500gm',7,300,'sweets'],['Malpua 500gm',6,240,'sweets'],['Coconut Barfi 500gm',9,280,'sweets']
 ];
 
+// All catalog images live in the Supabase `product-images` bucket under catalog/.
+// URLs are built from SUPABASE_URL (always set when seeding runs, since seeding is
+// gated on DB_ENABLED). Run scripts/migrate-images-to-supabase.js once to populate
+// the bucket. Filenames here must match the keys that script uploads.
+const SUPABASE_BASE = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+const supabaseImage = file => `${SUPABASE_BASE}/storage/v1/object/public/product-images/catalog/${file}`;
+
 const CATEGORY_FALLBACK = {
-  dairy: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=700&q=80',
-  beverages: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=700&q=80',
-  frozen: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=700&q=80',
-  snacks: 'https://images.unsplash.com/photo-1599599810694-b5b37304c041?auto=format&fit=crop&w=700&q=80',
-  sweets: 'https://images.unsplash.com/photo-1589119908995-c6837fa14848?auto=format&fit=crop&w=700&q=80',
-  bakery: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=700&q=80',
-  ingredients: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=700&q=80'
+  dairy: supabaseImage('category-dairy.jpg'),
+  beverages: supabaseImage('category-beverages.jpg'),
+  frozen: supabaseImage('category-frozen.jpg'),
+  snacks: supabaseImage('category-snacks.jpg'),
+  sweets: supabaseImage('category-sweets.jpg'),
+  bakery: supabaseImage('category-bakery.jpg'),
+  ingredients: supabaseImage('category-ingredients.jpg')
 };
 
 const PRODUCT_IMAGE_RULES = [
@@ -126,10 +133,10 @@ function getProductImage(name, category) {
   const label = name.toLowerCase();
   if (category === 'sweets') {
     const sweet = SWEET_IMAGE_RULES.find(([pattern]) => pattern.test(label));
-    return sweet ? `images/${sweet[1]}` : CATEGORY_FALLBACK.sweets;
+    return sweet ? supabaseImage(sweet[1]) : CATEGORY_FALLBACK.sweets;
   }
   const rule = PRODUCT_IMAGE_RULES.find(([pattern]) => pattern.test(label));
-  return rule ? `images/${rule[1]}` : (CATEGORY_FALLBACK[category] || '');
+  return rule ? supabaseImage(rule[1]) : (CATEGORY_FALLBACK[category] || '');
 }
 
 const getProductName = name => name

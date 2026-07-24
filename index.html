@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">
 
-  <title>Khandelwal &amp; Sons | Dairy, Frozen Foods &amp; Groceries Online</title>
-  <meta name="description" content="Shop dairy, cheese, frozen foods, Indian sweets, snacks &amp; groceries at Khandelwal &amp; Sons. Order online for home delivery — cash on delivery, confirmed by phone.">
+  <title>Khandelwal &amp; Sons | Dairy, Sweets &amp; Groceries in Ghatkopar, Mumbai</title>
+  <meta name="description" content="Buy dairy, cheese, frozen foods, Indian sweets, snacks &amp; groceries in Ghatkopar West, Mumbai. Order online from Khandelwal &amp; Sons for home delivery — cash on delivery, confirmed by phone.">
   <link rel="canonical" href="https://khandelwalandsons.in/">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta name="theme-color" content="#8B5E3C">
@@ -18,7 +18,7 @@
 
   <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
   <meta property="og:site_name" content="Khandelwal &amp; Sons">
-  <meta property="og:title" content="Khandelwal &amp; Sons | Dairy, Frozen Foods &amp; Groceries Online">
+  <meta property="og:title" content="Khandelwal &amp; Sons | Dairy, Sweets &amp; Groceries in Ghatkopar, Mumbai">
   <meta property="og:description" content="Order dairy, cheese, frozen foods, Indian sweets, snacks and groceries for home delivery — cash on delivery, confirmed by phone.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://khandelwalandsons.in/">
@@ -482,19 +482,27 @@
         <p class="footer-desc">Dairy, frozen foods and groceries — home delivered.</p>
       </div>
       <div>
-        <h4 class="footer-links-title">Quick Links</h4>
+        <h4 class="footer-links-title">Shop by Category</h4>
         <ul class="footer-links">
-          <li><a href="#hero" class="footer-link">Home</a></li>
-          <li><a href="#catalog" class="footer-link">Catalog Collection</a></li>
+          <li><a href="/category/dairy" class="footer-link">Dairy &amp; Cheese</a></li>
+          <li><a href="/category/beverages" class="footer-link">Milk &amp; Beverages</a></li>
+          <li><a href="/category/frozen" class="footer-link">Frozen &amp; Ready-to-Cook</a></li>
+          <li><a href="/category/sweets" class="footer-link">Indian Sweets</a></li>
+          <li><a href="/category/snacks" class="footer-link">Snacks &amp; Chocolates</a></li>
+          <li><a href="/category/ingredients" class="footer-link">Cooking Ingredients</a></li>
         </ul>
       </div>
       <div>
-        <h4 class="footer-links-title">Store Hours</h4>
-        <ul class="footer-links" style="color: var(--text-secondary); font-size: 0.9rem;">
-          <li>Monday - Saturday: 6:00 AM - 9:00 PM</li>
-          <li>Sunday: 6:00 AM - 1:00 PM</li>
-          <li>Call / WhatsApp: <a class="footer-link" href="https://wa.me/919321782424">+91 93217 82424</a></li>
-        </ul>
+        <h4 class="footer-links-title">Visit / Contact Us</h4>
+        <address class="footer-links" style="color: var(--text-secondary); font-size: 0.9rem; font-style: normal;">
+          Khandelwal &amp; Sons<br>
+          Municipal Complex, 71 Hirachand Desai Road,<br>
+          Sarvoday Station Road, Ghatkopar West,<br>
+          Mumbai, Maharashtra 400086<br>
+          <br>
+          Mon–Sat: 6:00 AM – 9:00 PM · Sun: 6:00 AM – 1:00 PM<br>
+          Call / WhatsApp: <a class="footer-link" href="https://wa.me/919321782424">+91 93217 82424</a>
+        </address>
       </div>
     </div>
     
@@ -504,8 +512,7 @@
     </div>
   </footer>
 
-  <!-- Structured data: helps Google show the shop's name, hours, phone and logo.
-       TODO for owner: fill in streetAddress / addressLocality / postalCode below. -->
+  <!-- Structured data: helps Google show the shop's name, address, hours, phone and logo. -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -514,7 +521,7 @@
         "@type": "GroceryStore",
         "@id": "https://khandelwalandsons.in/#store",
         "name": "Khandelwal & Sons",
-        "description": "Dairy, cheese, frozen foods, Indian sweets, snacks and groceries with home delivery and cash on delivery.",
+        "description": "Dairy, cheese, frozen foods, Indian sweets, snacks and groceries in Ghatkopar West, Mumbai — with home delivery and cash on delivery.",
         "url": "https://khandelwalandsons.in/",
         "logo": "https://khandelwalandsons.in/images/logo.png",
         "image": "https://khandelwalandsons.in/images/shop-2.png",
@@ -522,10 +529,23 @@
         "priceRange": "₹₹",
         "currenciesAccepted": "INR",
         "paymentAccepted": "Cash on Delivery",
-        "areaServed": "IN",
+        "areaServed": {
+          "@type": "City",
+          "name": "Mumbai"
+        },
+        "hasMap": "https://www.google.com/maps/search/?api=1&query=Khandelwal+%26+Sons+Ghatkopar+West+Mumbai",
         "address": {
           "@type": "PostalAddress",
+          "streetAddress": "Municipal Complex, 71 Hirachand Desai Road, Sarvoday Station Road",
+          "addressLocality": "Ghatkopar West",
+          "addressRegion": "Maharashtra",
+          "postalCode": "400086",
           "addressCountry": "IN"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 19.0863,
+          "longitude": 72.9081
         },
         "openingHoursSpecification": [
           {
