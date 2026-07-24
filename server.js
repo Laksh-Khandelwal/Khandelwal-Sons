@@ -98,20 +98,39 @@ app.use(express.json({ limit: '100kb' }));
 // ---------- WhatsApp helpers ----------
 
 function formatOrderMessage(order) {
+  const RULE = '━━━━━━━━━━━━━━';
   const lines = [];
-  lines.push(`🧾 New Order: ${order.id}`);
-  lines.push(`Customer: ${order.customer.name}${order.username && order.username !== 'Guest' ? ` (${order.username})` : ''}`);
+
+  // Header
+  lines.push('🧾 *NEW ORDER*');
+  lines.push(`Order ID: ${order.id}`);
+  if (order.timestamp) lines.push(`Placed: ${order.timestamp}`);
+  lines.push(RULE);
+
+  // Customer block
+  lines.push('👤 *Customer*');
+  lines.push(`Name: ${order.customer.name}${order.username && order.username !== 'Guest' ? ` (@${order.username})` : ''}`);
   lines.push(`Phone: ${order.customer.phone}`);
   lines.push(`Address: ${order.customer.address}`);
   lines.push(`Delivery: ${order.customer.deliveryTime}`);
-  lines.push('');
-  lines.push('Items:');
-  order.items.forEach(item => {
-    lines.push(`• ${item.name}${item.unit && item.unit !== 'Standard' ? ` (${item.unit})` : ''} ×${item.quantity} — ₹${(item.price * item.quantity).toFixed(2)}`);
+  lines.push(RULE);
+
+  // Items block (numbered, with per-line subtotal)
+  lines.push('🛒 *Items*');
+  let totalQty = 0;
+  order.items.forEach((item, i) => {
+    totalQty += item.quantity;
+    const unit = item.unit && item.unit !== 'Standard' ? ` (${item.unit})` : '';
+    lines.push(`${i + 1}. ${item.name}${unit}`);
+    lines.push(`    ${item.quantity} × ₹${item.price.toFixed(2)} = ₹${(item.price * item.quantity).toFixed(2)}`);
   });
-  lines.push('');
-  lines.push(`Total: ₹${order.total.toFixed(2)}`);
-  lines.push('Payment: Cash on Delivery');
+  lines.push(RULE);
+
+  // Summary block
+  lines.push(`📦 Items: ${order.items.length}  |  Qty: ${totalQty}`);
+  lines.push(`💰 *Total: ₹${order.total.toFixed(2)}*`);
+  lines.push('💵 Payment: Cash on Delivery');
+
   return lines.join('\n');
 }
 
