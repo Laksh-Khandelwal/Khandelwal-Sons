@@ -125,6 +125,18 @@
     </div>
   </section>
 
+  <!-- Frequently Ordered (owner-curated; hidden until products are tagged) -->
+  <section class="bestseller-section" id="frequently-ordered-showcase" style="display: none;">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Frequently Ordered</h2>
+      </div>
+      <div class="bestseller-row" id="frequently-ordered-grid">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </div>
+  </section>
+
   <!-- Catalog Section -->
   <section class="catalog-section" id="catalog">
     <div class="container">
@@ -245,6 +257,28 @@
           <select class="form-control" id="size-options"></select>
         </div>
         <button type="button" class="btn-primary" id="size-confirm-btn" style="width: 100%;">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Success Modal -->
+  <div class="modal-overlay" id="order-success-modal">
+    <div class="modal-content order-success-content" style="max-width: 420px;">
+      <div class="modal-body" style="text-align: center;">
+        <div class="success-check" aria-hidden="true">
+          <svg viewBox="0 0 52 52">
+            <circle class="success-check-circle" cx="26" cy="26" r="24" fill="none"/>
+            <path class="success-check-mark" fill="none" d="M15 27 l7 7 l15 -16"/>
+          </svg>
+        </div>
+        <h3 class="modal-title" style="font-size: 1.6rem; margin-bottom: 8px;">Order Placed!</h3>
+        <p class="modal-subtitle" id="success-order-msg" style="margin-bottom: 4px;">Thank you for your order.</p>
+        <p id="success-order-id" style="color: var(--accent-gold); font-weight: 700; letter-spacing: 0.02em; margin: 0 0 22px;"></p>
+        <div class="success-actions">
+          <button type="button" class="btn-primary" id="success-keep-shopping" style="width: 100%;">🛍️ Keep Shopping</button>
+          <button type="button" class="btn-secondary" id="success-view-history" style="width: 100%;">📦 View Order History</button>
+          <button type="button" class="btn-secondary" id="success-contact" style="width: 100%;">💬 Contact Us</button>
+        </div>
       </div>
     </div>
   </div>

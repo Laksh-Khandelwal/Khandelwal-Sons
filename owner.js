@@ -255,7 +255,7 @@ function renderOrders() {
       </div>
       <div class="order-card-body">
         <div class="customer-detail-row"><span>Customer:</span>${order.customer.name}${userTag}</div>
-        <div class="customer-detail-row"><span>Contact:</span>${order.customer.phone}</div>
+        <div class="customer-detail-row"><span>Contact:</span><a href="tel:${String(order.customer.phone).replace(/[^\d+]/g, '')}" style="color:var(--accent-gold);text-decoration:none;font-weight:600">${order.customer.phone}</a></div>
         <div class="customer-detail-row"><span>Address:</span>${order.customer.address}</div>
         <div class="customer-detail-row"><span>Preferred:</span>${order.customer.deliveryTime}</div>
 
@@ -453,6 +453,52 @@ function renderHistory() {
 }
 
 // Setup Event Listeners
+// Export all loaded orders to a real .xlsx workbook (SheetJS via CDN).
+function exportOrdersToExcel() {
+  if (typeof XLSX === 'undefined') {
+    showToast('Export library is still loading — please try again in a moment.');
+    return;
+  }
+  if (!Array.isArray(orders) || orders.length === 0) {
+    showToast('No orders to export yet.');
+    return;
+  }
+
+  const rows = orders.map(o => {
+    const items = Array.isArray(o.items) ? o.items : [];
+    const itemList = items
+      .map(it => `${it.name}${it.unit && it.unit !== 'Standard' ? ` (${it.unit})` : ''} x${it.quantity}`)
+      .join('; ');
+    const itemCount = items.reduce((s, it) => s + (Number(it.quantity) || 0), 0);
+    const c = o.customer || {};
+    return {
+      'Order ID': o.id || '',
+      'Date': o.timestamp || o.createdAt || '',
+      'Customer': c.name || '',
+      'Username': o.username || '',
+      'Phone': c.phone || '',
+      'Address': c.address || '',
+      'Delivery Time': c.deliveryTime || '',
+      'Items': itemList,
+      'Item Count': itemCount,
+      'Total (INR)': Number(o.total) || 0,
+      'Status': o.status || ''
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [
+    { wch: 22 }, { wch: 20 }, { wch: 20 }, { wch: 14 }, { wch: 15 },
+    { wch: 34 }, { wch: 18 }, { wch: 42 }, { wch: 10 }, { wch: 12 }, { wch: 16 }
+  ];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Orders');
+
+  const stamp = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `khandelwal-orders-${stamp}.xlsx`);
+  showToast(`Exported ${rows.length} order${rows.length === 1 ? '' : 's'} to Excel`);
+}
+
 function setupEventListeners() {
   // Handle Admin Password unlock (verified server-side)
   if (adminAuthForm) {
@@ -506,6 +552,9 @@ function setupEventListeners() {
       renderOrders();
     });
   }
+
+  const exportBtn = document.getElementById('export-orders-btn');
+  if (exportBtn) exportBtn.addEventListener('click', exportOrdersToExcel);
 
   // Sound Toggle
   if (soundToggle) {

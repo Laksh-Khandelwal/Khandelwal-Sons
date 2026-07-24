@@ -94,7 +94,7 @@ function requireOwner(req, res, next) {
   next();
 }
 
-app.use(express.json({ limit: '100kb' }));
+app.use(express.json({ limit: '12mb' })); // 12mb headroom for base64 product image uploads
 
 // ---------- WhatsApp helpers ----------
 
@@ -291,6 +291,8 @@ app.get('/api/orders/status', async (req, res) => {
 
 // ---------- Products API ----------
 
+const ALLOWED_TAGS = ['bestseller', 'frequently_ordered'];
+
 // Normalize a product payload coming from the admin form into the shape we store.
 function normalizeProductInput(body) {
   const name = String(body.name || '').trim();
@@ -305,7 +307,10 @@ function normalizeProductInput(body) {
       stock: Number(v.stock) || 0
     }))
     .filter(v => v.price >= 0);
-  return { name, category, image_url, variants };
+  const tags = Array.isArray(body.tags)
+    ? [...new Set(body.tags.map(String).filter(t => ALLOWED_TAGS.includes(t)))]
+    : [];
+  return { name, category, image_url, variants, tags };
 }
 
 // Seed the products table from the original catalog the first time it is empty.
@@ -329,6 +334,34 @@ async function seedProductsIfEmpty() {
   }
 }
 
+// One-time migration: expand originally-seeded single-size sweets to the full
+// 250gm–5kg size ladder. Only touches sweets that still have the original seed
+// variant (id starting "variant-"), so owner edits are never overwritten.
+async function migrateSweetSizesIfNeeded() {
+  if (!DB_ENABLED) return;
+  try {
+    const sweets = await sb('/products?select=id,variants&category=eq.sweets');
+    if (!Array.isArray(sweets) || !sweets.length) return;
+    const seedById = Object.fromEntries(buildSeedProducts().map(p => [p.id, p]));
+    let migrated = 0;
+    for (const row of sweets) {
+      const variants = Array.isArray(row.variants) ? row.variants : [];
+      const isOriginalSingle = variants.length === 1 && String(variants[0].id || '').startsWith('variant-');
+      if (!isOriginalSingle) continue;
+      const seedProduct = seedById[row.id];
+      if (!seedProduct || seedProduct.variants.length <= 1) continue;
+      await sb(`/products?id=eq.${encodeURIComponent(row.id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ variants: seedProduct.variants, updated_at: new Date().toISOString() })
+      });
+      migrated++;
+    }
+    if (migrated) console.log(`[products] Expanded ${migrated} sweet(s) to the 250gm–5kg size ladder.`);
+  } catch (err) {
+    console.error('[products] Sweet size migration failed:', err.message);
+  }
+}
+
 // Public: full catalog for the storefront, shaped like the old client-side PRODUCTS.
 app.get('/api/products', async (_req, res) => {
   if (!DB_ENABLED) return res.json({ ok: true, products: [] });
@@ -339,7 +372,8 @@ app.get('/api/products', async (_req, res) => {
       name: r.name,
       category: r.category,
       image: r.image_url,
-      variants: Array.isArray(r.variants) ? r.variants : []
+      variants: Array.isArray(r.variants) ? r.variants : [],
+      tags: Array.isArray(r.tags) ? r.tags : []
     }));
     res.json({ ok: true, products });
   } catch (err) {
@@ -461,6 +495,38 @@ app.delete('/api/owner/products/:id', requireOwner, async (req, res) => {
   }
 });
 
+// Upload a product image (base64) to Supabase Storage; returns a public URL.
+app.post('/api/owner/upload-image', requireOwner, async (req, res) => {
+  if (!DB_ENABLED) return res.status(503).json({ ok: false, error: 'Storage not configured' });
+  try {
+    const { dataBase64, contentType, filename } = req.body || {};
+    if (!dataBase64) return res.status(400).json({ ok: false, error: 'No image data provided' });
+    const type = /^image\/(png|jpe?g|webp|gif)$/i.test(contentType || '') ? contentType : 'image/jpeg';
+    const ext = (type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+    const safe = String(filename || 'product').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'product';
+    const key = `${Date.now().toString(36)}-${safe}.${ext}`;
+    const buffer = Buffer.from(dataBase64, 'base64');
+    const up = await fetch(`${SUPABASE_URL}/storage/v1/object/product-images/${key}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'apikey': SUPABASE_KEY,
+        'Content-Type': type,
+        'x-upsert': 'true'
+      },
+      body: buffer
+    });
+    if (!up.ok) {
+      const t = await up.text().catch(() => '');
+      console.error('[upload] failed:', up.status, t.slice(0, 200));
+      return res.status(502).json({ ok: false, error: `Upload failed (${up.status}) — is the product-images bucket created?` });
+    }
+    res.json({ ok: true, url: `${SUPABASE_URL}/storage/v1/object/public/product-images/${key}` });
+  } catch (err) {
+    res.status(502).json({ ok: false, error: err.message });
+  }
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({
     ok: true,
@@ -479,6 +545,7 @@ app.listen(PORT, () => {
   console.log(`WhatsApp notifications: ${PROVIDER === 'none' ? 'NOT configured (set CALLMEBOT_APIKEY, or GREENAPI_ID_INSTANCE + GREENAPI_API_TOKEN, or WHATSAPP_TOKEN + WHATSAPP_PHONE_NUMBER_ID)' : `via ${PROVIDER} → ${OWNER_WHATSAPP}`}`);
   console.log(`Order database: ${DB_ENABLED ? 'Supabase configured' : 'NOT configured (set SUPABASE_URL and SUPABASE_SERVICE_KEY)'}`);
   if (OWNER_PASSWORD === 'admin') console.warn('WARNING: OWNER_PASSWORD is still the default "admin" — set a strong one in the environment.');
-  // One-time: populate the products table from the built-in catalog if it's empty.
-  seedProductsIfEmpty();
+  // One-time: populate the products table from the built-in catalog if it's empty,
+  // then expand any originally-seeded sweets to the full size ladder.
+  seedProductsIfEmpty().then(migrateSweetSizesIfNeeded);
 });

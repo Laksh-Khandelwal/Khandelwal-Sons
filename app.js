@@ -18,6 +18,20 @@ const CATEGORY_DETAILS = {
 // so the shop owner can add/edit products from the admin page without a redeploy.
 let PRODUCTS = [];
 
+// Neutral placeholder shown if a product image fails to load (missing file, bad URL…).
+const IMG_PLACEHOLDER = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+  "<svg xmlns='http://www.w3.org/2000/svg' width='200' height='140'><rect width='100%' height='100%' fill='#FBF9F6'/><text x='50%' y='45%' font-size='30' text-anchor='middle' dominant-baseline='middle'>🛍️</text><text x='50%' y='72%' font-size='11' fill='#9C948D' font-family='sans-serif' text-anchor='middle'>Image coming soon</text></svg>"
+);
+// The load 'error' event doesn't bubble, so listen in the capture phase to catch
+// any product image that fails and swap it for the placeholder.
+document.addEventListener('error', e => {
+  const t = e.target;
+  if (t && t.tagName === 'IMG' && t.classList.contains('product-img') && t.dataset.fallback !== '1') {
+    t.dataset.fallback = '1';
+    t.src = IMG_PLACEHOLDER;
+  }
+}, true);
+
 // Compute the derived fields the UI expects (min price + unit label) for a product.
 function shapeProduct(p) {
   const variants = Array.isArray(p.variants) ? p.variants : [];
@@ -27,6 +41,7 @@ function shapeProduct(p) {
     category: p.category,
     image: p.image,
     variants,
+    tags: Array.isArray(p.tags) ? p.tags : [],
     price: variants.length ? Math.min(...variants.map(v => Number(v.price) || 0)) : 0,
     unit: variants.length === 1 ? variants[0].size : 'multiple sizes'
   };
@@ -147,6 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadProducts();
   loadCartFromStorage();
   renderBestSellers();
+  renderFrequentlyOrderedShowcase();
   renderCatalog();
 });
 
@@ -236,14 +252,8 @@ function renderCategoryCards() {
 }
 
 // Best sellers: the shop's fastest-moving items (highest stock turnover)
-function renderBestSellers() {
-  const row = document.getElementById('best-sellers-grid');
-  if (!row) return;
-
-  const totalStock = p => p.variants.reduce((s, v) => s + v.stock, 0);
-  const top = [...PRODUCTS].sort((a, b) => totalStock(b) - totalStock(a)).slice(0, 8);
-
-  row.innerHTML = top.map(product => `
+function showcaseCardHtml(product) {
+  return `
     <div class="product-card bestseller-card">
       <div class="product-img-wrapper">
         <img class="product-img" src="${product.image}" alt="${product.name}" loading="lazy">
@@ -257,12 +267,36 @@ function renderBestSellers() {
           <button class="btn-add-cart" aria-label="Add to cart" data-id="${product.id}">➕</button>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+}
 
+function bindShowcaseAddButtons(row) {
   row.querySelectorAll('.btn-add-cart').forEach(btn => {
     btn.addEventListener('click', () => openSizePicker(btn.getAttribute('data-id')));
   });
+}
+
+function renderBestSellers() {
+  const row = document.getElementById('best-sellers-grid');
+  if (!row) return;
+  // Owner-curated: show products tagged "bestseller"; if none tagged, fall back to top by stock.
+  const tagged = PRODUCTS.filter(p => (p.tags || []).includes('bestseller'));
+  const totalStock = p => p.variants.reduce((s, v) => s + (Number(v.stock) || 0), 0);
+  const list = tagged.length ? tagged : [...PRODUCTS].sort((a, b) => totalStock(b) - totalStock(a)).slice(0, 8);
+  row.innerHTML = list.map(showcaseCardHtml).join('');
+  bindShowcaseAddButtons(row);
+}
+
+// Owner-curated public "Frequently Ordered" row (tag-driven). Hidden if none tagged.
+function renderFrequentlyOrderedShowcase() {
+  const section = document.getElementById('frequently-ordered-showcase');
+  const row = document.getElementById('frequently-ordered-grid');
+  if (!section || !row) return;
+  const list = PRODUCTS.filter(p => (p.tags || []).includes('frequently_ordered'));
+  if (!list.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  row.innerHTML = list.map(showcaseCardHtml).join('');
+  bindShowcaseAddButtons(row);
 }
 
 // Render catalog items
@@ -1269,11 +1303,45 @@ async function handleOrderSubmission(type) {
   orderSubmitting = false;
   if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '🔔 Place Order'; }
 
-  showToast(delivered
-    ? 'Order placed! We will call you shortly to confirm (Cash on Delivery).'
-    : 'Order saved, but we could not reach the shop right now — please also call/WhatsApp us at +91 93217 82424 to confirm.');
   clearCart();
   checkoutModal.classList.remove('open');
+  showOrderSuccess(orderData.id, delivered);
+}
+
+// Celebratory order-confirmation modal shown after a successful checkout.
+function showOrderSuccess(orderId, delivered) {
+  const modal = document.getElementById('order-success-modal');
+  if (!modal) return;
+
+  const msgEl = document.getElementById('success-order-msg');
+  const idEl = document.getElementById('success-order-id');
+  if (msgEl) {
+    msgEl.textContent = delivered
+      ? "Thank you! We'll call you shortly to confirm your order (Cash on Delivery)."
+      : "Your order is saved. Please also call or WhatsApp us at +91 93217 82424 so we can confirm it.";
+  }
+  if (idEl) idEl.textContent = orderId ? `Order ${orderId}` : '';
+
+  const close = () => modal.classList.remove('open');
+  const keepBtn = document.getElementById('success-keep-shopping');
+  const historyBtn = document.getElementById('success-view-history');
+  const contactBtn = document.getElementById('success-contact');
+
+  if (keepBtn) keepBtn.onclick = close;
+  if (historyBtn) historyBtn.onclick = () => {
+    close();
+    const session = JSON.parse(localStorage.getItem('dairy_delights_session') || 'null');
+    if (session) {
+      openProfileModal();
+      if (tabProfileHistory) tabProfileHistory.click();
+    } else if (navLoginBtn) {
+      navLoginBtn.click(); // guest: open sign-in so they can view their history
+    }
+  };
+  if (contactBtn) contactBtn.onclick = () => window.open('https://wa.me/919321782424', '_blank', 'noopener');
+  modal.onclick = e => { if (e.target === modal) close(); };
+
+  modal.classList.add('open');
 }
 
 // Helper: Clear Cart

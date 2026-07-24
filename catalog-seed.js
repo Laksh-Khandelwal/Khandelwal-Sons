@@ -151,6 +151,31 @@ const getProductSize = name => {
   return sizes ? sizes.join(' · ') : 'Standard';
 };
 
+// Sweets are sold loose by weight, so offer a standard size ladder from
+// 250gm up to 5kg, priced proportionally from the item's base price.
+const SWEET_SIZES = [
+  ['250gm', 250], ['500gm', 500], ['750gm', 750], ['1kg', 1000],
+  ['1.5kg', 1500], ['2kg', 2000], ['3kg', 3000], ['5kg', 5000]
+];
+
+function gramsOf(sizeStr) {
+  const m = String(sizeStr).match(/([\d.]+)\s*(kg|gm|g)/i);
+  if (!m) return 1000;
+  const n = parseFloat(m[1]);
+  return /kg/i.test(m[2]) ? n * 1000 : n;
+}
+
+function sweetVariants(baseVariant, productId) {
+  const grams = gramsOf(baseVariant.size) || 1000;
+  const perGram = (Number(baseVariant.price) || 0) / grams;
+  return SWEET_SIZES.map(([label, g]) => ({
+    id: `${productId}-${g}`,
+    size: label,
+    price: Math.round(perGram * g),
+    stock: 20
+  }));
+}
+
 // Build the grouped product list, identical in shape to the original
 // client-side catalog: { id, name, category, image_url, sort_order, variants:[{id,size,price,stock}] }.
 function buildSeedProducts() {
@@ -178,7 +203,14 @@ function buildSeedProducts() {
       product.variants.push({ id: `variant-${index + 1}`, size, price, stock });
     }
   });
-  return Array.from(catalog.values());
+  const list = Array.from(catalog.values());
+  // Give every sweet the full 250gm–5kg size ladder.
+  list.forEach(p => {
+    if (p.category === 'sweets' && p.variants.length) {
+      p.variants = sweetVariants(p.variants[0], p.id);
+    }
+  });
+  return list;
 }
 
 module.exports = { buildSeedProducts };

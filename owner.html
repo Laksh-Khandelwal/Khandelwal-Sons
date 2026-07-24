@@ -107,6 +107,7 @@
         <div class="orders-header">
           <h2 class="orders-title">Active Orders</h2>
           <div class="orders-actions">
+            <button type="button" id="export-orders-btn" class="btn-secondary" style="padding: 0 16px; height: 40px; font-size: 0.85rem; border-radius: var(--radius-full); white-space: nowrap;">⬇️ Export to Excel</button>
             <!-- Filter Dropdown -->
             <select id="order-filter-status" class="order-status-select" aria-label="Filter orders by status">
               <option value="all">All Orders</option>
@@ -164,6 +165,7 @@
           <div class="history-list" id="history-list">
             <!-- Rendered dynamically by owner.js -->
           </div>
+          <a href="order-history.html" class="history-full-link history-view-all-bottom">View complete order history →</a>
         </div>
       </aside>
     </div>
@@ -175,6 +177,7 @@
     <span class="toast-text">Success message placeholder</span>
   </div>
 
-  <script src="owner.js?v=6"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="owner.js?v=7"></script>
 </body>
 </html>

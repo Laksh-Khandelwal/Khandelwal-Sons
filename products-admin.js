@@ -38,6 +38,11 @@ const fImage = document.getElementById('pm-image');
 const imgPreview = document.getElementById('pm-img-preview');
 const variantsWrap = document.getElementById('pm-variants');
 const toastEl = document.getElementById('toast-notification');
+const fFile = document.getElementById('pm-file');
+const fCamera = document.getElementById('pm-camera');
+const uploadStatus = document.getElementById('pm-upload-status');
+const tagBestseller = document.getElementById('pm-tag-bestseller');
+const tagFrequent = document.getElementById('pm-tag-frequent');
 
 // ---------- Toast ----------
 let toastTimer = null;
@@ -131,6 +136,8 @@ function renderList() {
         <div class="pm-name">${escapeHtml(p.name)}</div>
         <div class="pm-meta">
           <span class="pm-badge">${escapeHtml(CATEGORY_LABEL[p.category] || p.category)}</span>
+          ${(p.tags || []).includes('bestseller') ? '<span class="pm-badge" style="background:rgba(217,107,98,0.15);color:var(--accent-red)">⭐ Best Seller</span>' : ''}
+          ${(p.tags || []).includes('frequently_ordered') ? '<span class="pm-badge" style="background:rgba(197,168,128,0.28)">🔁 Frequent</span>' : ''}
           ${variantSummary(p.variants)}
         </div>
       </div>
@@ -174,6 +181,10 @@ function openEditor(id) {
   fCategory.value = product ? product.category : CATEGORIES[0][0];
   fImage.value = product ? (product.image_url || '') : '';
   updateImagePreview();
+  if (uploadStatus) uploadStatus.textContent = '';
+  const tags = product && Array.isArray(product.tags) ? product.tags : [];
+  if (tagBestseller) tagBestseller.checked = tags.includes('bestseller');
+  if (tagFrequent) tagFrequent.checked = tags.includes('frequently_ordered');
   variantsWrap.innerHTML = '';
   const variants = product && Array.isArray(product.variants) && product.variants.length ? product.variants : [{ size: 'Standard', price: '', stock: '' }];
   variants.forEach(addVariantRow);
@@ -204,7 +215,11 @@ form.addEventListener('submit', async e => {
     name: fName.value.trim(),
     category: fCategory.value,
     image_url: fImage.value.trim(),
-    variants: collectVariants()
+    variants: collectVariants(),
+    tags: [
+      ...(tagBestseller && tagBestseller.checked ? ['bestseller'] : []),
+      ...(tagFrequent && tagFrequent.checked ? ['frequently_ordered'] : [])
+    ]
   };
   if (!payload.name || !payload.category || payload.variants.length === 0) {
     showToast('Add a name, category and at least one size.');
@@ -241,6 +256,56 @@ async function deleteProduct(id) {
     showToast('Could not delete: ' + err.message);
   }
 }
+
+// ---------- Image upload (device / camera) ----------
+// Compress to a reasonable size before upload so camera photos aren't huge.
+async function fileToCompressedBase64(file, maxDim = 1200, quality = 0.82) {
+  const dataUrl = await new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = reject;
+    fr.readAsDataURL(file);
+  });
+  const img = await new Promise((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = reject;
+    i.src = dataUrl;
+  });
+  let w = img.width, h = img.height;
+  if (Math.max(w, h) > maxDim) {
+    const scale = maxDim / Math.max(w, h);
+    w = Math.round(w * scale); h = Math.round(h * scale);
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+  return canvas.toDataURL('image/jpeg', quality).split(',')[1];
+}
+
+async function handleImageFile(file) {
+  if (!file) return;
+  uploadStatus.textContent = 'Uploading…';
+  try {
+    const base64 = await fileToCompressedBase64(file);
+    const res = await fetch('/api/owner/upload-image', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ dataBase64: base64, contentType: 'image/jpeg', filename: fName.value || 'product' })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Upload failed');
+    fImage.value = data.url;
+    updateImagePreview();
+    uploadStatus.textContent = 'Uploaded ✓';
+  } catch (err) {
+    uploadStatus.textContent = '';
+    showToast('Upload failed: ' + err.message);
+  }
+}
+
+if (fFile) fFile.addEventListener('change', e => { handleImageFile(e.target.files[0]); e.target.value = ''; });
+if (fCamera) fCamera.addEventListener('change', e => { handleImageFile(e.target.files[0]); e.target.value = ''; });
 
 // ---------- Wire up ----------
 document.getElementById('pm-add-btn').addEventListener('click', () => openEditor(null));

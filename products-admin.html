@@ -8,7 +8,7 @@
   <link rel="icon" href="images/logo.png">
   <link rel="stylesheet" href="style.css?v=12">
   <style>
-    .pm-main { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
+    .pm-main { max-width: 1100px; margin: 0 auto; padding: 104px 20px 80px; }
     .pm-head { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; margin-bottom: 24px; }
     .pm-head h1 { font-size: 1.8rem; color: var(--text-primary); margin: 0; }
     .pm-head p { color: var(--text-muted); margin: 4px 0 0; font-size: 0.9rem; }
@@ -114,9 +114,27 @@
           <select id="pm-category" required></select>
         </div>
         <div class="pm-field">
-          <label for="pm-image">Image URL or path</label>
-          <input type="text" id="pm-image" placeholder="images/amul-butter.jpg or https://…">
+          <label for="pm-image">Product image</label>
+          <input type="text" id="pm-image" placeholder="Upload below, or paste an image URL / path">
+          <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; align-items:center;">
+            <label class="pm-btn pm-btn-ghost" style="cursor:pointer; margin:0;">📁 Upload from device
+              <input type="file" id="pm-file" accept="image/*" style="display:none;">
+            </label>
+            <label class="pm-btn pm-btn-ghost" style="cursor:pointer; margin:0;">📷 Take photo
+              <input type="file" id="pm-camera" accept="image/*" capture="environment" style="display:none;">
+            </label>
+            <span id="pm-upload-status" style="font-size:0.8rem; color:var(--text-muted);"></span>
+          </div>
           <img id="pm-img-preview" class="pm-img-preview" alt="preview">
+        </div>
+        <div class="pm-field">
+          <label>Highlights (show in storefront rows)</label>
+          <label style="display:inline-flex; align-items:center; gap:8px; margin-right:20px; font-weight:500; cursor:pointer;">
+            <input type="checkbox" id="pm-tag-bestseller"> ⭐ Best Seller
+          </label>
+          <label style="display:inline-flex; align-items:center; gap:8px; font-weight:500; cursor:pointer;">
+            <input type="checkbox" id="pm-tag-frequent"> 🔁 Frequently Ordered
+          </label>
         </div>
         <div class="pm-field">
           <label>Sizes &amp; pricing</label>
