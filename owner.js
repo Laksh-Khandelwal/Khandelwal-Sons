@@ -52,7 +52,7 @@ const toastNotification = document.getElementById('toast-notification');
 // Initialize Dashboard
 document.addEventListener('DOMContentLoaded', () => {
   checkAdminAuth();
-  if (ownerKey()) loadOrders();
+  if (ownerKey()) loadOrdersResilient();
   setupEventListeners();
   setInterval(() => { if (ownerKey()) loadOrders({ silent: true }); }, POLL_INTERVAL_MS);
 
@@ -132,13 +132,13 @@ function playNotificationChime() {
 }
 
 // Load orders from the backend API
-async function loadOrders({ silent = false } = {}) {
+async function loadOrders({ silent = false, suppressError = false } = {}) {
   try {
     const res = await fetch('/api/owner/orders', { headers: authHeaders() });
     if (res.status === 401) {
       localStorage.removeItem("dd_owner_key"); sessionStorage.removeItem("dd_owner_key");
       checkAdminAuth();
-      return;
+      return false;
     }
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Failed to load orders');
@@ -168,10 +168,31 @@ async function loadOrders({ silent = false } = {}) {
     renderOrders();
     calculateStats();
     renderHistory();
+    return true;
   } catch (err) {
     console.error('Failed to load orders:', err);
-    if (!silent) showToast('Could not load orders: ' + err.message);
+    if (!silent && !suppressError) showToast('Could not load orders: ' + err.message);
+    return false;
   }
+}
+
+// Resilient first load: the free-tier server can be briefly waking up (cold
+// start), so a single request may fail transiently. Retry a few times with a
+// friendly "waking up" message before surfacing a real error.
+async function loadOrdersResilient() {
+  const maxAttempts = 8;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    if (!ownerKey()) return; // logged out mid-retry
+    const ok = await loadOrders({ suppressError: true });
+    if (ok) return;
+    if (attempt < maxAttempts) {
+      showToast(attempt === 1
+        ? 'Waking up the server — one moment…'
+        : `Reconnecting to server… (${attempt}/${maxAttempts})`);
+      await new Promise(r => setTimeout(r, 2500));
+    }
+  }
+  showToast('Could not load orders — the server may still be waking up. Please refresh in a moment.');
 }
 
 // Render list of orders
@@ -450,7 +471,7 @@ function setupEventListeners() {
           localStorage.setItem("dd_owner_key", pwd);
           showToast('Admin access unlocked!');
           checkAdminAuth();
-          loadOrders();
+          loadOrdersResilient();
         } else {
           showToast('Access Denied. Incorrect Password.');
         }
