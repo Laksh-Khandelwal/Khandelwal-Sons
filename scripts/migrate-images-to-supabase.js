@@ -38,13 +38,13 @@ const IMAGE_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.bmp', '.gif']);
 // The category placeholders currently hot-linked from Unsplash. Keyed by category;
 // used both to fetch the source image and to rewrite matching DB rows.
 const CATEGORY_UNSPLASH = {
-  dairy: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=700&q=80',
-  beverages: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=700&q=80',
-  frozen: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=700&q=80',
-  snacks: 'https://images.unsplash.com/photo-1599599810694-b5b37304c041?auto=format&fit=crop&w=700&q=80',
-  sweets: 'https://images.unsplash.com/photo-1589119908995-c6837fa14848?auto=format&fit=crop&w=700&q=80',
-  bakery: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=700&q=80',
-  ingredients: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=700&q=80'
+  dairy: 'https://images.unsplash.com/photo-1683314573422-649a3c6ad784?auto=format&fit=crop&w=700&q=80',
+  beverages: 'https://images.unsplash.com/photo-1635436338433-89747d0ca0ef?auto=format&fit=crop&w=700&q=80',
+  frozen: 'https://images.unsplash.com/photo-1632640109744-4dea429408ab?auto=format&fit=crop&w=700&q=80',
+  snacks: 'https://images.unsplash.com/photo-1579895989448-9cc51e9a7060?auto=format&fit=crop&w=700&q=80',
+  sweets: 'https://images.unsplash.com/photo-1646578515903-67873a5398f9?auto=format&fit=crop&w=700&q=80',
+  bakery: 'https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=700&q=80',
+  ingredients: 'https://images.unsplash.com/photo-1682490301133-db17d61a5324?auto=format&fit=crop&w=700&q=80'
 };
 
 const CONTENT_TYPE = {

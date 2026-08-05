@@ -5,13 +5,13 @@
 
 
 const CATEGORY_DETAILS = {
-  dairy: { label: 'Dairy & Cheese', image: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=700&q=80' },
-  beverages: { label: 'Milk & Beverages', image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=700&q=80' },
-  frozen: { label: 'Frozen & Ready-to-Cook', image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=700&q=80' },
-  snacks: { label: 'Snacks & Chocolates', image: 'https://images.unsplash.com/photo-1599599810694-b5b37304c041?auto=format&fit=crop&w=700&q=80' },
-  sweets: { label: 'Sweets', image: 'https://images.unsplash.com/photo-1589119908995-c6837fa14848?auto=format&fit=crop&w=700&q=80' },
-  bakery: { label: 'Bakery', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=700&q=80' },
-  ingredients: { label: 'Cooking Ingredients', image: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=700&q=80' }
+  dairy: { label: 'Dairy & Cheese', image: 'https://images.unsplash.com/photo-1683314573422-649a3c6ad784?auto=format&fit=crop&w=700&q=80' },
+  beverages: { label: 'Milk & Beverages', image: 'https://images.unsplash.com/photo-1635436338433-89747d0ca0ef?auto=format&fit=crop&w=700&q=80' },
+  frozen: { label: 'Frozen & Ready-to-Cook', image: 'https://images.unsplash.com/photo-1632640109744-4dea429408ab?auto=format&fit=crop&w=700&q=80' },
+  snacks: { label: 'Snacks & Chocolates', image: 'https://images.unsplash.com/photo-1579895989448-9cc51e9a7060?auto=format&fit=crop&w=700&q=80' },
+  sweets: { label: 'Sweets', image: 'https://images.unsplash.com/photo-1646578515903-67873a5398f9?auto=format&fit=crop&w=700&q=80' },
+  bakery: { label: 'Bakery', image: 'https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=700&q=80' },
+  ingredients: { label: 'Cooking Ingredients', image: 'https://images.unsplash.com/photo-1682490301133-db17d61a5324?auto=format&fit=crop&w=700&q=80' }
 };
 
 // Live catalog — loaded from the backend (Supabase) instead of a hardcoded list,
@@ -35,8 +35,10 @@ async function loadConfig() {
   }
 }
 
-// Supabase URL for a category placeholder tile, with the old Unsplash link as a
-// safety net if config hasn't loaded.
+// Category tile image. Prefer the self-hosted Supabase copy; if config hasn't
+// loaded yet, use the Unsplash source directly. Either way the <img> also carries
+// an onerror fallback (see renderCategoryCards) so a missing Supabase file never
+// leaves a broken tile.
 function categoryImage(key, fallback) {
   return SUPABASE_BASE
     ? `${SUPABASE_BASE}/storage/v1/object/public/product-images/catalog/category-${key}.jpg`
@@ -296,7 +298,9 @@ function renderCategoryCards() {
 
   wrap.innerHTML = Object.entries(CATEGORY_DETAILS).map(([key, cat]) => `
     <button class="category-card-mini" data-category="${key}">
-      <img src="${categoryImage(key, cat.image)}" alt="${cat.label}" loading="lazy">
+      <img src="${escapeAttr(categoryImage(key, cat.image))}" alt="${escapeAttr(cat.label)}"
+           loading="lazy" data-fallback="${escapeAttr(cat.image)}"
+           onerror="if(this.src!==this.dataset.fallback){this.onerror=null;this.src=this.dataset.fallback;}">
       <span>${cat.label}</span>
     </button>
   `).join('');

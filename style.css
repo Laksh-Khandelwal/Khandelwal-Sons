@@ -1555,6 +1555,7 @@ button {
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   padding: 0;
+  cursor: pointer;
 }
 
 .category-card-mini:hover {
@@ -1568,6 +1569,7 @@ button {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  background: var(--accent-cream);
 }
 
 .category-card-mini span {
@@ -1734,11 +1736,23 @@ button {
     padding-top: 32px;
   }
   .category-cards {
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-wrap: nowrap;
     gap: 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    margin: 0 -14px;
+    padding: 0 14px 4px;
+  }
+  .category-cards::-webkit-scrollbar {
+    display: none;
   }
   .category-card-mini {
+    flex: 0 0 140px;
     height: 90px;
+    scroll-snap-align: start;
   }
   .reorder-grid {
     grid-template-columns: 1fr;
